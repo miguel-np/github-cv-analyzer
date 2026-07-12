@@ -11,7 +11,7 @@ use App\Service\Analysis\Provider\OpenAiProvider;
 use App\Service\GitHub\TokenEncryptionService;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-final readonly class LlmFactory implements LlmFactoryInterface
+final readonly class LlmFactory
 {
     public function __construct(
         private HttpClientInterface $httpClient,

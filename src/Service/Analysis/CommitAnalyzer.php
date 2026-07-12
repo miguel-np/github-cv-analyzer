@@ -14,7 +14,7 @@ use Psr\Log\LoggerInterface;
 final readonly class CommitAnalyzer
 {
     public function __construct(
-        private LlmFactoryInterface $llmFactory,
+        private LlmFactory $llmFactory,
         private EntityManagerInterface $em,
         private LoggerInterface $logger,
     ) {

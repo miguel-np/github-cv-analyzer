@@ -1,0 +1,164 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CV Analysis &mdash; GitHub CV Analyzer{% endblock %}
+
+{% block body %}
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">CV Analysis</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        AI-powered insights to improve your professional profile.
+    </p>
+</div>
+
+{% if not account %}
+    <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-8 text-center">
+        <p class="text-gray-500 dark:text-gray-400">Connect your GitHub account in Settings first.</p>
+        <a href="{{ path('app_settings') }}" class="mt-4 inline-flex items-center text-blue-500 hover:text-blue-600">Go to Settings &rarr;</a>
+    </div>
+{% else %}
+    {% if not llmEnabled %}
+        <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 p-4 mb-6">
+            <p class="text-sm text-amber-800 dark:text-amber-300">
+                AI analysis is disabled. Enable it in <a href="{{ path('app_settings') }}" class="underline">Settings</a> to get CV suggestions.
+            </p>
+        </div>
+    {% endif %}
+
+    {% if stats.repositories > 0 %}
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-6 mb-8">
+        {% set statCards = [
+            { label: 'Repos', value: stats.repositories },
+            { label: 'Commits', value: stats.commits },
+            { label: 'PRs', value: stats.pull_requests },
+            { label: 'Issues', value: stats.issues },
+            { label: 'Analyzed', value: stats.analyzed },
+            { label: 'Months', value: stats.months|length },
+        ] %}
+        {% for card in statCards %}
+            <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-4 text-center">
+                <dt class="text-xs text-gray-500 dark:text-gray-400 uppercase">{{ card.label }}</dt>
+                <dd class="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{{ card.value }}</dd>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if stats.first_commit %}
+        <p class="text-xs text-gray-400 dark:text-gray-500 mb-6">
+            Activity: {{ stats.first_commit }} to {{ stats.last_commit }}
+            ({{ stats.months|length }} months)
+        </p>
+    {% endif %}
+    {% endif %}
+
+    {% if analysis %}
+        <div class="rounded-lg bg-green-50 dark:bg-green-900/20 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Overall Assessment</h2>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">{{ analysis.overall_assessment }}</p>
+        </div>
+
+        {% if analysis.strengths|length > 0 %}
+        <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Strengths</h2>
+            <ul class="mt-3 space-y-2">
+                {% for strength in analysis.strengths %}
+                    <li class="flex items-start text-sm text-gray-700 dark:text-gray-300">
+                        <span class="text-green-500 mr-2">&#x2713;</span>
+                        {{ strength }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if analysis.gaps|length > 0 %}
+        <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Skill Gaps</h2>
+            <div class="mt-3 space-y-3">
+                {% for gap in analysis.gaps %}
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-semibold text-gray-900 dark:text-white">{{ gap.area }}</h4>
+                            <span class="text-xs px-2 py-0.5 rounded-full font-medium
+                                {% if gap.severity == 'high' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300
+                                {% elseif gap.severity == 'medium' %}bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300
+                                {% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300{% endif %}">
+                                {{ gap.severity }}
+                            </span>
+                        </div>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ gap.suggestion }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if analysis.improvements|length > 0 %}
+        <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Actionable Improvements</h2>
+            <div class="mt-3 space-y-3">
+                {% for imp in analysis.improvements %}
+                    <div class="flex items-start">
+                        <span class="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold
+                            {% if imp.priority == 'high' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300
+                            {% elseif imp.priority == 'medium' %}bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300
+                            {% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300{% endif %}">
+                            {{ loop.index }}
+                        </span>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ imp.action }}</p>
+                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ imp.reason }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="text-center">
+            <a href="{{ path('app_cv_analysis', {regenerate: 1}) }}" class="text-sm text-blue-500 hover:text-blue-600 underline">
+                Regenerate Analysis
+            </a>
+        </div>
+    {% else %}
+        <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-8 text-center">
+            <div class="mx-auto max-w-md">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+                    {% if stats.repositories == 0 %}
+                        No data yet
+                    {% elseif not llmEnabled %}
+                        AI analysis required
+                    {% else %}
+                        Generate your CV analysis
+                    {% endif %}
+                </h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    {% if stats.repositories == 0 %}
+                        Sync your repositories in Settings to gather contribution data.
+                    {% elseif not llmEnabled %}
+                        Enable an LLM provider in Settings to analyze your contributions and get CV improvement suggestions.
+                    {% else %}
+                        Our AI will analyze your contribution patterns and suggest specific improvements.
+                    {% endif %}
+                </p>
+                <div class="mt-6">
+                    {% if stats.repositories > 0 and llmEnabled %}
+                        <a href="{{ path('app_cv_analysis', {regenerate: 1}) }}"
+                           class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
+                            Generate Analysis
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_settings') }}"
+                           class="inline-flex items-center rounded-md bg-gray-800 dark:bg-white px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 shadow-sm hover:bg-gray-700 dark:hover:bg-gray-100">
+                            Go to Settings &rarr;
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
+{% endblock %}
