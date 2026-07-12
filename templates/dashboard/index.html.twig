@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard &mdash; GitHub CV Analyzer{% endblock %}
+
+{% block body %}
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Welcome to your GitHub contribution analysis dashboard.
+    </p>
+</div>
+
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+{% set cards = [
+    { label: 'Repositories', value: stats.repositories, class: 'bg-blue-500' },
+    { label: 'Commits', value: stats.commits, class: 'bg-green-500' },
+    { label: 'Pull Requests', value: stats.pull_requests, class: 'bg-purple-500' },
+    { label: 'Issues', value: stats.issues, class: 'bg-amber-500' },
+] %}
+
+{% for card in cards %}
+    <div class="overflow-hidden rounded-lg bg-white dark:bg-gray-900 shadow">
+        <div class="p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="w-3 h-3 rounded-full {{ card.class }}"></div>
+                </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                                {{ card.label }}
+                            </dt>
+                            <dd class="text-3xl font-semibold text-gray-900 dark:text-white">
+                                {{ card.value }}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="mt-8 rounded-lg bg-white dark:bg-gray-900 shadow p-8 text-center">
+    <div class="mx-auto max-w-md">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M11.42 15.17l-4.25-4.25m0 0l4.25-4.25m-4.25 4.25h11.66" />
+        </svg>
+        <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+            Connect your GitHub account
+        </h3>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Head to Settings to link your GitHub account and start analyzing your contributions.
+        </p>
+        <div class="mt-6">
+            <a href="#"
+                class="inline-flex items-center rounded-md bg-gray-800 dark:bg-white px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 shadow-sm hover:bg-gray-700 dark:hover:bg-gray-100">
+                Go to Settings &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

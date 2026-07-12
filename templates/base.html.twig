@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GitHub CV Analyzer{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#x1F4CA</text></svg>">
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+    {% endblock %}
+    {% block javascripts %}
+        {{ importmap('app') }}
+    {% endblock %}
+</head>
+<body class="h-full bg-gray-50 dark:bg-gray-950">
+    <div class="min-h-full">
+        <nav class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 items-center justify-between">
+                    <div class="flex items-center">
+                        <a href="{{ path('app_dashboard') }}" class="text-xl font-bold text-gray-900 dark:text-white">
+                            &#x1F4CA; GitHub CV Analyzer
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ path('app_dashboard') }}" class="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+                            Dashboard
+                        </a>
+                        <span class="text-xs text-gray-400">v0.1.0</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {% block body %}{% endblock %}
+            </div>
+        </main>
+
+        <footer class="mt-auto border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+            <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+                <p class="text-center text-xs text-gray-500">
+                    GitHub CV Analyzer &mdash; Fase 1: Foundation
+                </p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
