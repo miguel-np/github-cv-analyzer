@@ -8,8 +8,8 @@
 | 2 | GitHub Integration | 🟡 4-5h | 🟡 Media | 🟠 Alto | &#10003; |
 | 3 | Data Collection | 🔴 8-10h | 🟡 Media | 🔴 Crítico | &#10003; |
 | 4 | LLM Analysis Engine | 🔴 6-8h | 🔴 Alta | 🟣 Muy Alto | &#10003; |
-| 5 | Dashboard & UI | 🔴 8-12h | 🟡 Media | 🟣 Muy Alto | |
-| 6 | CV Analysis | 🟡 4-6h | 🔵 Baja | 🟠 Alto | |
+| 5 | Dashboard & UI | 🔴 8-12h | 🟡 Media | 🟣 Muy Alto | &#10003; |
+| 6 | CV Analysis | 🟡 4-6h | 🔵 Baja | 🟠 Alto | &#10003; |
 
 **Total estimado**: 35-42 horas
 
