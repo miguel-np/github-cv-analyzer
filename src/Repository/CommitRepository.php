@@ -101,4 +101,22 @@ class CommitRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @param int[] $repoIds
+     */
+    public function countAnalyzedByIds(array $repoIds): int
+    {
+        if (count($repoIds) === 0) {
+            return 0;
+        }
+
+        $conn = $this->getEntityManager()->getConnection();
+
+        return (int) $conn->executeQuery(
+            'SELECT COUNT(*) FROM commits c JOIN analysis_results a ON a.commit_id = c.id WHERE c.repository_id IN (:ids)',
+            ['ids' => $repoIds],
+            ['ids' => \Doctrine\DBAL\ArrayParameterType::INTEGER]
+        )->fetchOne();
+    }
 }

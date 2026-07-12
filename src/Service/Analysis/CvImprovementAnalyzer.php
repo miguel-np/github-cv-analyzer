@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Analysis;
 
+use App\Entity\GithubAccount;
 use App\Entity\User;
 use App\Repository\CommitRepository;
 use App\Repository\GithubAccountRepository;
@@ -58,7 +59,7 @@ final readonly class CvImprovementAnalyzer
         }
     }
 
-    private function buildContext($account, array $repoIds): array
+    private function buildContext(GithubAccount $account, array $repoIds): array
     {
         $repoCount = count($repoIds);
         $totalCommits = $this->repoRepo->countCommitsByIds($repoIds);
