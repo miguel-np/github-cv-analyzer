@@ -10,7 +10,7 @@ use App\Message\SyncAccountMessage;
 use App\Repository\GithubAccountRepository;
 use App\Repository\SyncJobRepository;
 use App\Repository\UserRepository;
-use App\Service\GitHub\GitHubClient;
+use App\Service\GitHub\GitHubClientInterface;
 use App\Service\GitHub\TokenEncryptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Github\Exception\RuntimeException as GithubRuntimeException;
@@ -29,7 +29,7 @@ class SettingsController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         TokenEncryptionService $tokenEncryption,
-        GitHubClient $gitHubClient,
+        GitHubClientInterface $gitHubClient,
         GithubAccountRepository $accountRepo,
         UserRepository $userRepo,
         SyncJobRepository $jobRepo,
@@ -98,7 +98,7 @@ class SettingsController extends AbstractController
     public function verify(
         Request $request,
         TokenEncryptionService $tokenEncryption,
-        GitHubClient $gitHubClient,
+        GitHubClientInterface $gitHubClient,
     ): Response {
         $token = trim($request->request->get('github_token', ''));
 

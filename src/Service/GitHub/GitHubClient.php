@@ -11,7 +11,7 @@ use Symfony\Component\HttpClient\HttplugClient;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
-final class GitHubClient
+final class GitHubClient implements GitHubClientInterface
 {
     private const PER_PAGE = 100;
     private const RATE_LIMIT_CACHE_KEY = 'github_rate_limit_remaining';

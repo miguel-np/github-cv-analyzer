@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 final readonly class GitHubSyncService
 {
     public function __construct(
-        private GitHubClient $client,
+        private GitHubClientInterface $client,
         private EntityManagerInterface $em,
         private LoggerInterface $logger,
     ) {
