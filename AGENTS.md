@@ -4,7 +4,7 @@ Instrucciones para agentes de IA que trabajen en este proyecto. Cumplir estricta
 
 ## Stack y versiones
 
-- Symfony 7.x (última estable) + PHP 8.4
+- Symfony 7.4 (LTS) + PHP 8.5
 - PostgreSQL 16 — queries Doctrine con soporte jsonb
 - Tailwind CSS v4 (vía symfonycasts/tailwind-bundle)
 - Symfony UX: Turbo, Stimulus
@@ -81,7 +81,7 @@ php bin/console lint:twig templates/    # Lint Twig
 - No exponer secretos en entities ni usar `json_encode` en entities — usar tipos Doctrine json
 - No commits con credenciales o tokens reales
 - No crear nuevos bundles sin discutirlo primero
-- No modificar `composer.json` añadiendo dependencias sin verificar compatibilidad con PHP 8.3 y Symfony 7
+- No modificar `composer.json` añadiendo dependencias sin verificar compatibilidad con PHP 8.5 y Symfony 7.4
 
 ## Tests
 

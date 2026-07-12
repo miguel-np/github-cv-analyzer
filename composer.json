@@ -12,23 +12,23 @@
         "doctrine/orm": "^3.6",
         "knplabs/github-api": "^3.16",
         "nyholm/psr7": "^1.8",
-        "symfony/asset": "7.2.*",
-        "symfony/asset-mapper": "7.2.*",
-        "symfony/console": "7.2.*",
-        "symfony/dotenv": "7.2.*",
+        "symfony/asset": "7.4.*",
+        "symfony/asset-mapper": "7.4.*",
+        "symfony/console": "7.4.*",
+        "symfony/dotenv": "7.4.*",
         "symfony/flex": "^2",
-        "symfony/framework-bundle": "7.2.*",
-        "symfony/http-client": "7.2.*",
-        "symfony/messenger": "7.2.*",
-        "symfony/runtime": "7.2.*",
-        "symfony/scheduler": "7.2.*",
-        "symfony/security-csrf": "7.2.*",
-        "symfony/serializer": "7.2.*",
-        "symfony/stimulus-bundle": "*",
-        "symfony/twig-bundle": "7.2.*",
+        "symfony/framework-bundle": "7.4.*",
+        "symfony/http-client": "7.4.*",
+        "symfony/messenger": "7.4.*",
+        "symfony/runtime": "7.4.*",
+        "symfony/scheduler": "7.4.*",
+        "symfony/security-csrf": "7.4.*",
+        "symfony/serializer": "7.4.*",
+        "symfony/stimulus-bundle": ">=3.2",
+        "symfony/twig-bundle": "7.4.*",
         "symfony/ux-turbo": "*",
-        "symfony/validator": "7.2.*",
-        "symfony/yaml": "7.2.*",
+        "symfony/validator": "7.4.*",
+        "symfony/yaml": "7.4.*",
         "symfonycasts/tailwind-bundle": "*"
     },
     "config": {
@@ -84,7 +84,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "7.2.*"
+            "require": "7.4.*"
         }
     }
 }
