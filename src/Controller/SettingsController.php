@@ -153,6 +153,41 @@ class SettingsController extends AbstractController
         return $this->redirectToRoute('app_settings');
     }
 
+    #[Route('/settings/llm', name: 'app_settings_llm', methods: ['POST'])]
+    public function llm(
+        Request $request,
+        EntityManagerInterface $em,
+        UserRepository $userRepo,
+        TokenEncryptionService $tokenEncryption,
+    ): Response {
+        if (!$this->isCsrfTokenValid('llm', $request->request->get('_token'))) {
+            return $this->redirectToRoute('app_settings');
+        }
+
+        $user = $this->getOrCreateUser($em, $userRepo);
+        $settings = $user->getSettings();
+
+        $settings['llm_provider'] = $request->request->get('llm_provider', 'ollama');
+        $settings['llm_model'] = $request->request->get('llm_model', '');
+        $settings['llm_enabled'] = $request->request->getBoolean('llm_enabled');
+        $settings['ollama_host'] = $request->request->get('ollama_host', 'http://localhost:11434');
+
+        $apiKey = trim($request->request->get('llm_api_key', ''));
+
+        if ($apiKey !== '') {
+            $settings['llm_api_key'] = $tokenEncryption->encrypt($apiKey);
+        } elseif (($settings['llm_provider'] ?? '') !== 'ollama') {
+            $settings['llm_api_key'] = null;
+        }
+
+        $user->setSettings($settings);
+        $em->flush();
+
+        $this->addFlash('success', 'LLM configuration saved.');
+
+        return $this->redirectToRoute('app_settings');
+    }
+
     private function getOrCreateUser(EntityManagerInterface $em, UserRepository $userRepo): User
     {
         $user = $userRepo->findOneBy([]);

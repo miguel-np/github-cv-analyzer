@@ -116,6 +116,66 @@
     </div>
 </div>
 
+<div class="mt-8 rounded-lg bg-white dark:bg-gray-900 shadow p-6">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">AI Analysis Configuration</h2>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Configure an LLM provider to analyze your commits automatically.
+    </p>
+
+    <form method="post" action="{{ path('app_settings_llm') }}" class="mt-6 space-y-4">
+        <input type="hidden" name="_token" value="{{ csrf_token('llm') }}">
+
+        <div>
+            <label class="inline-flex items-center">
+                <input type="checkbox" name="llm_enabled" value="1"
+                    class="rounded border-gray-300 dark:border-gray-600"
+                    {{ account and account.user.settings.llm_enabled ? 'checked' : '' }}>
+                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable AI analysis</span>
+            </label>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+                <label for="llm_provider" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Provider</label>
+                <select name="llm_provider" id="llm_provider"
+                    class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white">
+                    <option value="ollama" {{ (account and account.user.settings.llm_provider|default('ollama') == 'ollama') ? 'selected' : '' }}>Ollama (local, free)</option>
+                    <option value="openai" {{ (account and account.user.settings.llm_provider == 'openai') ? 'selected' : '' }}>OpenAI (GPT-4o)</option>
+                    <option value="anthropic" {{ (account and account.user.settings.llm_provider == 'anthropic') ? 'selected' : '' }}>Anthropic (Claude)</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="llm_model" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
+                <input type="text" name="llm_model" id="llm_model"
+                    value="{{ account ? account.user.settings.llm_model|default('') : '' }}"
+                    placeholder="llama3.2 / gpt-4o-mini"
+                    class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white">
+            </div>
+
+            <div id="ollama-host-group">
+                <label for="ollama_host" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ollama Host</label>
+                <input type="text" name="ollama_host" id="ollama_host"
+                    value="{{ account ? account.user.settings.ollama_host|default('http://localhost:11434') : 'http://localhost:11434' }}"
+                    class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white">
+            </div>
+        </div>
+
+        <div id="api-key-group">
+            <label for="llm_api_key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">API Key</label>
+            <input type="password" name="llm_api_key" id="llm_api_key"
+                placeholder="sk-... (leave empty to keep current)"
+                class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white">
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Not needed for Ollama. Encrypted at rest.</p>
+        </div>
+
+        <button type="submit"
+            class="inline-flex items-center rounded-md bg-gray-800 dark:bg-white px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 shadow-sm hover:bg-gray-700 dark:hover:bg-gray-100">
+            Save AI Configuration
+        </button>
+    </form>
+</div>
+
 {% if account and syncJobs|length > 0 %}
 <div class="mt-8 rounded-lg bg-white dark:bg-gray-900 shadow p-6">
     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Sync History</h2>
@@ -162,5 +222,18 @@
             document.getElementById('verify_token').value = document.getElementById('github_token').value;
             document.getElementById('verify-form').submit();
         });
+
+        const providerSelect = document.getElementById('llm_provider');
+        const apiKeyGroup = document.getElementById('api-key-group');
+        const ollamaHostGroup = document.getElementById('ollama-host-group');
+
+        function toggleFields() {
+            const provider = providerSelect.value;
+            apiKeyGroup.style.display = provider === 'ollama' ? 'none' : '';
+            ollamaHostGroup.style.display = provider === 'ollama' ? '' : 'none';
+        }
+
+        providerSelect.addEventListener('change', toggleFields);
+        toggleFields();
     </script>
 {% endblock %}

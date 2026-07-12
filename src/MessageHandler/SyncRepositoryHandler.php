@@ -6,12 +6,15 @@ namespace App\MessageHandler;
 
 use App\Entity\GithubAccount;
 use App\Entity\GithubRepo;
+use App\Message\AnalyzeCommitMessage;
 use App\Message\SyncRepositoryMessage;
 use App\Service\GitHub\GitHubSyncService;
 use App\Service\GitHub\SyncJobManager;
+use App\Repository\CommitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsMessageHandler]
 final readonly class SyncRepositoryHandler
@@ -20,6 +23,7 @@ final readonly class SyncRepositoryHandler
         private EntityManagerInterface $em,
         private GitHubSyncService $syncService,
         private SyncJobManager $jobManager,
+        private MessageBusInterface $bus,
         private LoggerInterface $logger,
     ) {
     }
@@ -56,6 +60,20 @@ final readonly class SyncRepositoryHandler
             $totalSynced += $issuesSynced;
 
             $this->jobManager->complete($repoJob, $totalSynced);
+
+            $unanalyzedCommits = $this->em->getRepository(CommitRepository::class)
+                ->createQueryBuilder('c')
+                ->leftJoin('c.analysisResult', 'a')
+                ->where('c.repository = :repo')
+                ->andWhere('a.id IS NULL')
+                ->setParameter('repo', $repo)
+                ->setMaxResults(50)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($unanalyzedCommits as $commit) {
+                $this->bus->dispatch(new AnalyzeCommitMessage($commit->getId()));
+            }
         } catch (\Throwable $e) {
             $this->logger->error('SyncRepositoryHandler failed', [
                 'repo' => $repo->getFullName(),
