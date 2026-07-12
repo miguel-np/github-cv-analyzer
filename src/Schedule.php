@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Message\SyncAccountMessage;
-use App\Repository\GithubAccountRepository;
+use App\Message\TriggerDailySyncMessage;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
 use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule as SymfonySchedule;
@@ -17,24 +17,21 @@ class Schedule implements ScheduleProviderInterface
 {
     public function __construct(
         private CacheInterface $cache,
-        private GithubAccountRepository $accountRepo,
+        #[Autowire('%env(default:sync_interval_default:SYNC_INTERVAL)%')]
+        private string $syncInterval,
     ) {
     }
 
     public function getSchedule(): SymfonySchedule
     {
-        $schedule = (new SymfonySchedule())
+        return (new SymfonySchedule())
             ->stateful($this->cache)
-            ->processOnlyLastMissedRun(true);
-
-        $accounts = $this->accountRepo->findAll();
-
-        foreach ($accounts as $account) {
-            $schedule->add(
-                RecurringMessage::every('12 hours', new SyncAccountMessage($account->getId()))
+            ->processOnlyLastMissedRun(true)
+            ->add(
+                RecurringMessage::every(
+                    $this->syncInterval,
+                    new TriggerDailySyncMessage()
+                )
             );
-        }
-
-        return $schedule;
     }
 }

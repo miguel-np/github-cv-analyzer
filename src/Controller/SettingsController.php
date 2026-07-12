@@ -115,7 +115,7 @@ class SettingsController extends AbstractController
                 'success' => true,
                 'username' => $username,
             ]);
-        } catch (GithubRuntimeException $e) {
+        } catch (GithubRuntimeException) {
             $request->getSession()->set('github_verification', [
                 'success' => false,
                 'error' => 'Token inválido o expirado.',

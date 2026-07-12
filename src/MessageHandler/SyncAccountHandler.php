@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\MessageHandler;
 
 use App\Entity\GithubAccount;
-use App\Message\AnalyzeCommitMessage;
 use App\Message\SyncAccountMessage;
 use App\Message\SyncRepositoryMessage;
 use App\Service\GitHub\GitHubSyncService;

@@ -16,6 +16,7 @@ framework:
             'App\Message\SyncAccountMessage': async
             'App\Message\SyncRepositoryMessage': async
             'App\Message\AnalyzeCommitMessage': async
+            'App\Message\TriggerDailySyncMessage': async
 
 when@test:
     framework:

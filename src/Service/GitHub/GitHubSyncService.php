@@ -23,9 +23,7 @@ final readonly class GitHubSyncService
 
     public function syncRepositories(GithubAccount $account): array
     {
-        $this->client->authenticate($account->getEncryptedToken());
-
-        $existingByGithubId = $this->loadExistingRepos();
+        $existingByGithubId = $this->loadExistingReposByAccount($account);
         $synced = [];
 
         foreach ($this->client->listRepositories() as $repoData) {
@@ -60,19 +58,17 @@ final readonly class GitHubSyncService
 
     public function syncCommits(GithubRepo $repo, GithubAccount $account): int
     {
-        $this->client->authenticate($account->getEncryptedToken());
-
-        [$owner, $name] = explode('/', $repo->getFullName());
+        [$owner, $name] = self::splitRepoFullName($repo->getFullName());
         $since = $repo->getLastSyncedAt()?->format('Y-m-d\TH:i:s\Z');
 
+        $existingShas = $this->loadExistingCommitShas($repo);
         $syncedCount = 0;
         $username = $account->getGithubUsername();
 
         foreach ($this->client->listCommits($owner, $name, $since, $username) as $commitData) {
             $sha = $commitData['sha'];
 
-            $existing = $this->em->getRepository(Commit::class)->findOneBy(['sha' => $sha]);
-            if ($existing !== null) {
+            if (isset($existingShas[$sha])) {
                 continue;
             }
 
@@ -92,6 +88,7 @@ final readonly class GitHubSyncService
             $commit->setDiffStats($detail['files'] ?? []);
 
             $this->em->persist($commit);
+            $existingShas[$sha] = true;
             ++$syncedCount;
 
             if ($syncedCount % 20 === 0) {
@@ -112,13 +109,13 @@ final readonly class GitHubSyncService
 
     public function syncPullRequests(GithubRepo $repo, GithubAccount $account): int
     {
-        $this->client->authenticate($account->getEncryptedToken());
+        [$owner, $name] = self::splitRepoFullName($repo->getFullName());
+        $since = $repo->getLastSyncedAt()?->format('Y-m-d\TH:i:s\Z');
 
-        [$owner, $name] = explode('/', $repo->getFullName());
         $existingIds = $this->loadExistingPRIds($repo);
         $syncedCount = 0;
 
-        foreach ($this->client->listPullRequests($owner, $name) as $prData) {
+        foreach ($this->client->listPullRequests($owner, $name, 'all', $since) as $prData) {
             if (in_array($prData['id'], $existingIds, true)) {
                 continue;
             }
@@ -159,13 +156,13 @@ final readonly class GitHubSyncService
 
     public function syncIssues(GithubRepo $repo, GithubAccount $account): int
     {
-        $this->client->authenticate($account->getEncryptedToken());
+        [$owner, $name] = self::splitRepoFullName($repo->getFullName());
+        $since = $repo->getLastSyncedAt()?->format('Y-m-d\TH:i:s\Z');
 
-        [$owner, $name] = explode('/', $repo->getFullName());
         $existingIds = $this->loadExistingIssueIds($repo);
         $syncedCount = 0;
 
-        foreach ($this->client->listIssues($owner, $name) as $issueData) {
+        foreach ($this->client->listIssues($owner, $name, 'all', $since) as $issueData) {
             if (in_array($issueData['id'], $existingIds, true)) {
                 continue;
             }
@@ -199,15 +196,54 @@ final readonly class GitHubSyncService
     }
 
     /**
+     * @return array{0: string, 1: string}
+     */
+    public static function splitRepoFullName(string $fullName): array
+    {
+        $parts = explode('/', $fullName);
+
+        return [$parts[0], $parts[1]];
+    }
+
+    /**
      * @return array<int, GithubRepo>
      */
-    private function loadExistingRepos(): array
+    private function loadExistingReposByAccount(GithubAccount $account): array
     {
-        $repos = $this->em->getRepository(GithubRepo::class)->findAll();
+        $repos = $this->em->getRepository(GithubRepo::class)
+            ->createQueryBuilder('r')
+            ->join('r.contributors', 'c')
+            ->where('c.id = :accountId')
+            ->setParameter('accountId', $account->getId())
+            ->getQuery()
+            ->getResult();
+
         $indexed = [];
 
         foreach ($repos as $repo) {
             $indexed[$repo->getGithubId()] = $repo;
+        }
+
+        return $indexed;
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function loadExistingCommitShas(GithubRepo $repo): array
+    {
+        $shas = $this->em->getRepository(Commit::class)
+            ->createQueryBuilder('c')
+            ->select('c.sha')
+            ->where('c.repository = :repo')
+            ->setParameter('repo', $repo)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        $indexed = [];
+
+        foreach ($shas as $sha) {
+            $indexed[$sha] = true;
         }
 
         return $indexed;

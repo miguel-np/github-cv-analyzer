@@ -118,17 +118,24 @@ final class GitHubClient
     /**
      * @return \Generator<array>
      */
-    public function listPullRequests(string $owner, string $repo, string $state = 'all'): \Generator
+    public function listPullRequests(string $owner, string $repo, string $state = 'all', ?string $since = null): \Generator
     {
         $this->checkRateLimit();
         $page = 1;
+        $params = [
+            'state' => $state,
+            'per_page' => self::PER_PAGE,
+            'sort' => 'updated',
+            'direction' => 'desc',
+        ];
+
+        if ($since !== null) {
+            $params['since'] = $since;
+        }
 
         do {
-            $prs = $this->client->pullRequest()->all($owner, $repo, [
-                'state' => $state,
-                'per_page' => self::PER_PAGE,
-                'page' => $page,
-            ]);
+            $params['page'] = $page;
+            $prs = $this->client->pullRequest()->all($owner, $repo, $params);
             foreach ($prs as $pr) {
                 yield $pr;
             }
@@ -139,18 +146,25 @@ final class GitHubClient
     /**
      * @return \Generator<array>
      */
-    public function listIssues(string $owner, string $repo, string $state = 'all'): \Generator
+    public function listIssues(string $owner, string $repo, string $state = 'all', ?string $since = null): \Generator
     {
         $this->checkRateLimit();
         $page = 1;
+        $params = [
+            'state' => $state,
+            'filter' => 'all',
+            'per_page' => self::PER_PAGE,
+            'sort' => 'updated',
+            'direction' => 'desc',
+        ];
+
+        if ($since !== null) {
+            $params['since'] = $since;
+        }
 
         do {
-            $issues = $this->client->issues()->all($owner, $repo, [
-                'state' => $state,
-                'filter' => 'all',
-                'per_page' => self::PER_PAGE,
-                'page' => $page,
-            ]);
+            $params['page'] = $page;
+            $issues = $this->client->issues()->all($owner, $repo, $params);
             foreach ($issues as $issue) {
                 if (isset($issue['pull_request'])) {
                     continue;
