@@ -6,16 +6,18 @@ namespace App\Controller;
 
 use App\Entity\GithubAccount;
 use App\Entity\User;
+use App\Message\SyncAccountMessage;
 use App\Repository\GithubAccountRepository;
+use App\Repository\SyncJobRepository;
 use App\Repository\UserRepository;
 use App\Service\GitHub\GitHubClient;
-use App\Service\GitHub\GitHubSyncService;
 use App\Service\GitHub\TokenEncryptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Github\Exception\RuntimeException as GithubRuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 class SettingsController extends AbstractController
@@ -28,9 +30,10 @@ class SettingsController extends AbstractController
         EntityManagerInterface $em,
         TokenEncryptionService $tokenEncryption,
         GitHubClient $gitHubClient,
-        GitHubSyncService $syncService,
         GithubAccountRepository $accountRepo,
         UserRepository $userRepo,
+        SyncJobRepository $jobRepo,
+        MessageBusInterface $bus,
     ): Response {
         $user = $this->getOrCreateUser($em, $userRepo);
         $account = $accountRepo->findOneBy(['user' => $user]);
@@ -61,12 +64,11 @@ class SettingsController extends AbstractController
                 $account->setGithubUsername($username);
                 $em->flush();
 
-                $repos = $syncService->syncRepositories($account);
+                $bus->dispatch(new SyncAccountMessage($account->getId()));
 
                 $this->addFlash('success', sprintf(
-                    'Cuenta conectada como %s. %d repositorios sincronizados.',
-                    $username,
-                    count($repos)
+                    'Cuenta conectada como %s. Sincronización iniciada en segundo plano.',
+                    $username
                 ));
             } catch (GithubRuntimeException $e) {
                 $this->addFlash('error', 'Credenciales de GitHub inválidas. Verifica el token.');
@@ -79,9 +81,16 @@ class SettingsController extends AbstractController
             return $this->redirectToRoute('app_settings');
         }
 
+        $jobs = $account ? $jobRepo->findBy(
+            ['githubAccount' => $account],
+            ['createdAt' => 'DESC'],
+            5
+        ) : [];
+
         return $this->render('settings/index.html.twig', [
             'account' => $account,
             'verification' => $verificationResult,
+            'syncJobs' => $jobs,
         ]);
     }
 
@@ -116,6 +125,29 @@ class SettingsController extends AbstractController
                 'success' => false,
                 'error' => 'Error de conexión con GitHub.',
             ]);
+        }
+
+        return $this->redirectToRoute('app_settings');
+    }
+
+    #[Route('/settings/resync', name: 'app_settings_resync', methods: ['POST'])]
+    public function resync(
+        GithubAccountRepository $accountRepo,
+        UserRepository $userRepo,
+        EntityManagerInterface $em,
+        MessageBusInterface $bus,
+        Request $request,
+    ): Response {
+        if (!$this->isCsrfTokenValid('resync', $request->request->get('_token'))) {
+            return $this->redirectToRoute('app_settings');
+        }
+
+        $user = $this->getOrCreateUser($em, $userRepo);
+        $account = $accountRepo->findOneBy(['user' => $user]);
+
+        if ($account) {
+            $bus->dispatch(new SyncAccountMessage($account->getId()));
+            $this->addFlash('success', 'Re-synchronization started.');
         }
 
         return $this->redirectToRoute('app_settings');

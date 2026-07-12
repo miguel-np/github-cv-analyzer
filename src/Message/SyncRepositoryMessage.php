@@ -8,6 +8,7 @@ final readonly class SyncRepositoryMessage
 {
     public function __construct(
         public int $repositoryId,
+        public int $githubAccountId,
     ) {
     }
 }

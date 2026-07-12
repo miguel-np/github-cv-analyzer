@@ -81,6 +81,86 @@ final class GitHubClient
         } while (count($repos) === self::PER_PAGE);
     }
 
+    /**
+     * @return \Generator<array>
+     */
+    public function listCommits(string $owner, string $repo, ?string $since = null, ?string $author = null): \Generator
+    {
+        $this->checkRateLimit();
+        $page = 1;
+        $params = ['per_page' => self::PER_PAGE];
+
+        if ($since !== null) {
+            $params['since'] = $since;
+        }
+
+        if ($author !== null) {
+            $params['author'] = $author;
+        }
+
+        do {
+            $params['page'] = $page;
+            $commits = $this->client->repo()->commits()->all($owner, $repo, $params);
+            foreach ($commits as $commit) {
+                yield $commit;
+            }
+            ++$page;
+        } while (count($commits) === self::PER_PAGE);
+    }
+
+    public function getCommitDetail(string $owner, string $repo, string $sha): array
+    {
+        $this->checkRateLimit();
+
+        return $this->client->repo()->commits()->show($owner, $repo, $sha);
+    }
+
+    /**
+     * @return \Generator<array>
+     */
+    public function listPullRequests(string $owner, string $repo, string $state = 'all'): \Generator
+    {
+        $this->checkRateLimit();
+        $page = 1;
+
+        do {
+            $prs = $this->client->pullRequest()->all($owner, $repo, [
+                'state' => $state,
+                'per_page' => self::PER_PAGE,
+                'page' => $page,
+            ]);
+            foreach ($prs as $pr) {
+                yield $pr;
+            }
+            ++$page;
+        } while (count($prs) === self::PER_PAGE);
+    }
+
+    /**
+     * @return \Generator<array>
+     */
+    public function listIssues(string $owner, string $repo, string $state = 'all'): \Generator
+    {
+        $this->checkRateLimit();
+        $page = 1;
+
+        do {
+            $issues = $this->client->issues()->all($owner, $repo, [
+                'state' => $state,
+                'filter' => 'all',
+                'per_page' => self::PER_PAGE,
+                'page' => $page,
+            ]);
+            foreach ($issues as $issue) {
+                if (isset($issue['pull_request'])) {
+                    continue;
+                }
+                yield $issue;
+            }
+            ++$page;
+        } while (count($issues) === self::PER_PAGE);
+    }
+
     public function getRepository(string $owner, string $name): array
     {
         $this->checkRateLimit();
