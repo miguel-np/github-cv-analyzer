@@ -10,8 +10,9 @@
 | 4 | LLM Analysis Engine | 🔴 6-8h | 🔴 Alta | 🟣 Muy Alto | &#10003; |
 | 5 | Dashboard & UI | 🔴 8-12h | 🟡 Media | 🟣 Muy Alto | &#10003; |
 | 6 | CV Analysis | 🟡 4-6h | 🔵 Baja | 🟠 Alto | &#10003; |
+| 7 | Scheduler & Automation | 🟢 1-2h | 🟢 Baja | 🟡 Medio | &#10003; |
 
-**Total estimado**: 35-42 horas
+**Total estimado**: 36-44 horas
 
 ## Dependencias
 
@@ -25,20 +26,20 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 
 ## Fase 1: Foundation
 
-**Objetivo**: Proyecto Symfony 7 funcional con stack de desarrollo completo.
+**Objetivo**: Proyecto Symfony 7.4 funcional con stack de desarrollo completo.
 
 **Entregables**:
 - [x] Documentación de proyecto (AGENTS.md, README.md, docs/)
-- [ ] Proyecto Symfony 7 creado con `composer create-project`
-- [ ] Docker Compose con PHP 8.3 + PostgreSQL 16
-- [ ] Bundles instalados: ORM, Messenger, AssetMapper, Turbo, Stimulus, Tailwind
-- [ ] Doctrine configurado con PostgreSQL
-- [ ] Entidades base creadas (User, GithubAccount, Repository, SyncJob)
-- [ ] Migraciones iniciales generadas y ejecutadas
-- [ ] Estructura de directorios: Service/, Message/, MessageHandler/
-- [ ] AssetMapper + Turbo + Stimulus + Tailwind funcionando
-- [ ] Layout base con Tailwind y navegación
-- [ ] Página dashboard placeholder
+- [x] Proyecto Symfony 7.4 creado con `composer create-project`
+- [x] Docker Compose con PHP 8.5 + PostgreSQL 16
+- [x] Bundles instalados: ORM, Messenger, AssetMapper, Turbo, Stimulus, Tailwind, Scheduler
+- [x] Doctrine configurado con PostgreSQL
+- [x] Entidades base creadas (User, GithubAccount, GithubRepo, SyncJob, Commit, PullRequest, Issue, Technology, AnalysisResult)
+- [x] Migraciones iniciales generadas y ejecutadas
+- [x] Estructura de directorios: Service/ (GitHub/, Analysis/Provider/, Analysis/Prompt/, Analysis/Shared/), Message/, MessageHandler/
+- [x] AssetMapper + Turbo + Stimulus + Tailwind funcionando
+- [x] Layout base con Tailwind y navegación
+- [x] Página dashboard placeholder
 
 ---
 
@@ -61,14 +62,14 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 **Objetivo**: Sistema asíncrono de recolección de datos de GitHub.
 
 **Entregables**:
-- [ ] Configuración de Symfony Messenger (Doctrine transport)
-- [ ] Mensajes: `SyncAccountMessage`, `SyncRepositoryMessage`
-- [ ] Handlers con rate limiting y reintentos
-- [ ] Sincronización de commits por repositorio (paginación)
-- [ ] Sincronización de PRs e issues
-- [ ] Sincronización incremental (solo nuevos desde `last_synced_at`)
-- [ ] Entidades: Commit, PullRequest, Issue
-- [ ] Interfaz básica para disparar sync y ver progreso
+- [x] Configuración de Symfony Messenger (Doctrine transport)
+- [x] Mensajes: `SyncAccountMessage`, `SyncRepositoryMessage`, `TriggerDailySyncMessage`
+- [x] Handlers con rate limiting y reintentos
+- [x] Sincronización de commits por repositorio (paginación)
+- [x] Sincronización de PRs e issues
+- [x] Sincronización incremental (solo nuevos desde `last_synced_at`)
+- [x] Entidades: Commit, PullRequest, Issue
+- [x] Interfaz básica para disparar sync y ver progreso
 
 ---
 
@@ -77,18 +78,19 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 **Objetivo**: Motor de análisis de contribuciones usando IA.
 
 **Entregables**:
-- [ ] Interfaz `LlmClientInterface`
-- [ ] `OllamaProvider` (local, gratis)
-- [ ] `OpenAiProvider` (nube, GPT-4o)
-- [ ] `AnthropicProvider` (nube, Claude)
-- [ ] Sistema de prompt templates con structured output (JSON Schema)
-- [ ] `CommitAnalyzer` — clasifica commits, detecta tecnologías
-- [ ] `TechnologyDetector` — extrae stack tecnológico por repo
-- [ ] `CvImprovementAnalyzer` — sugiere mejoras de CV
-- [ ] Caché de análisis por commit SHA
-- [ ] Tracking de costes y tokens por provider
-- [ ] Entidad `AnalysisResult`
-- [ ] Interfaz de settings para configurar provider IA
+- [x] Interfaz `LlmClientInterface` y `LlmFactoryInterface`
+- [x] `LlmFactory` — crea provider según configuración del usuario
+- [x] `OllamaProvider` (local, gratis)
+- [x] `OpenAiProvider` (nube, GPT-4o)
+- [x] `AnthropicProvider` (nube, Claude)
+- [x] Sistema de prompt templates con structured output (JSON Schema)
+- [x] `CommitAnalyzer` — clasifica commits, detecta tecnologías
+- [x] `TechnologyDetector` — extrae stack tecnológico por repo
+- [x] `CvImprovementAnalyzer` — sugiere mejoras de CV
+- [x] Caché de análisis por commit SHA
+- [x] Tracking de costes y tokens por provider
+- [x] Entidad `AnalysisResult`
+- [x] Interfaz de settings para configurar provider IA
 
 ---
 
@@ -97,15 +99,15 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 **Objetivo**: Interfaz de usuario completa con estadísticas y visualizaciones.
 
 **Entregables**:
-- [ ] Dashboard principal: stats agregadas (commits, repos, PRs, issues)
-- [ ] Línea de tiempo de contribuciones (Chart.js)
-- [ ] Tech radar: tecnologías más usadas (Chart.js radar)
-- [ ] Distribución por tipo de contribución (Chart.js doughnut)
-- [ ] Página de detalle de repositorio con lista de commits analizados
+- [x] Dashboard principal: stats agregadas (commits, repos, PRs, issues)
+- [x] Línea de tiempo de contribuciones (Chart.js)
+- [x] Tech radar: tecnologías más usadas (Chart.js radar)
+- [x] Distribución por tipo de contribución (Chart.js doughnut)
+- [x] Página de detalle de repositorio con lista de commits analizados
 - [ ] Filtros por tecnología, fecha, tipo de contribución
 - [ ] Turbo Streams para actualizaciones en vivo durante sync
-- [ ] Responsive design con Tailwind
-- [ ] Modo oscuro
+- [x] Responsive design con Tailwind
+- [x] Modo oscuro
 
 ---
 
@@ -114,9 +116,23 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 **Objetivo**: Análisis final del perfil y generación de informes.
 
 **Entregables**:
-- [ ] Página de análisis de CV con sugerencias generadas por IA
-- [ ] Detección de gaps (áreas débiles, tecnologías ausentes)
-- [ ] Recomendaciones de proyectos o tecnologías a aprender
+- [x] Página de análisis de CV con sugerencias generadas por IA
+- [x] Detección de gaps (áreas débiles, tecnologías ausentes)
+- [x] Recomendaciones de proyectos o tecnologías a aprender
 - [ ] Exportación de informe en PDF/HTML
 - [ ] Comparativa con perfiles de referencia (opcional)
 - [ ] Métricas de mejora a lo largo del tiempo
+
+---
+
+## Fase 7: Scheduler & Automation
+
+**Objetivo**: Sincronización periódica automática sin intervención del usuario.
+
+**Entregables**:
+- [x] Configuración de Symfony Scheduler
+- [x] Clase `Schedule` con `TriggerDailySyncMessage` recurrente
+- [x] Intervalo configurable vía `SYNC_INTERVAL` (default: 12h)
+- [x] `TriggerDailySyncHandler` itera todas las cuentas activas
+- [x] Persistencia en caché para evitar duplicados entre deploys
+- [x] Procesamiento de solo la última ejecución perdida

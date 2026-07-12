@@ -10,17 +10,18 @@ Conectas tu cuenta de GitHub mediante token. El sistema indexa todos los reposit
 
 | Capa | Tecnología |
 |------|-----------|
-| Backend | Symfony 7 + PHP 8.3 |
+| Backend | Symfony 7.4 + PHP 8.5 |
 | UI | Twig + Turbo + Stimulus + Tailwind CSS v4 |
 | BD | PostgreSQL 16 + Doctrine ORM |
 | GitHub API | knplabs/github-api |
 | Async | Symfony Messenger (Doctrine transport) |
+| Scheduler | Symfony Scheduler (daily auto-sync) |
 | IA / LLM | Ollama (local), OpenAI, Anthropic — abstracción multi-provider |
 | JS/CSS | Symfony AssetMapper |
 
 ## Requisitos
 
-- PHP 8.3+ con extensiones: pdo_pgsql, xml, intl, curl, mbstring, zip
+- PHP 8.4+ con extensiones: pdo_pgsql, xml, intl, curl, mbstring, zip
 - Composer 2
 - PostgreSQL 16+
 - Docker (opcional, recomendado para desarrollo)
@@ -44,8 +45,10 @@ cp .env .env.local
 php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate
 
-# Arrancar servidor de desarrollo
+# Arrancar servidor de desarrollo y scheduler
 symfony server:start -d
+php bin/console messenger:consume async -vv &
+php bin/console scheduler:run --verbose
 ```
 
 ## Uso

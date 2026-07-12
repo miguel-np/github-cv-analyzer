@@ -10,6 +10,7 @@ Instrucciones para agentes de IA que trabajen en este proyecto. Cumplir estricta
 - Symfony UX: Turbo, Stimulus
 - AssetMapper para JS/CSS (no Webpack Encore)
 - Symfony Messenger con transporte Doctrine para async
+- Symfony Scheduler para tareas periódicas (auto-sync diario)
 
 ## Reglas de código
 
@@ -24,11 +25,14 @@ src/
 │   ├── GitHub/         # Cliente GitHub y servicios de sincronización
 │   └── Analysis/       # Motor de análisis con LLMs
 │       ├── Provider/   # OllamaProvider, OpenAiProvider, AnthropicProvider
-│       └── Prompt/     # Templates de prompts
+│       ├── Prompt/     # Templates de prompts
+│       └── Shared/     # Helpers (JsonHelper, TechnologyHelper)
 ├── Message/            # Clases DTO de Messenger (final, readonly)
 ├── MessageHandler/     # Handlers asíncronos
 ├── Twig/Components/    # Componentes Twig reutilizables
-└── Stimulus/           # Controladores Stimulus
+├── Stimulus/           # Controladores Stimulus
+├── Schedule.php        # Tarea periódica (Scheduler) — auto-sync diario
+└── Kernel.php
 ```
 
 ### Convenciones
@@ -46,9 +50,11 @@ src/
 
 - **Token de GitHub**: cifrado con libsodium antes de persistir en BD
 - **LLM multi-provider**: interfaz `LlmClientInterface` con implementaciones por provider
+- **LlmFactory**: `LlmFactoryInterface` crea el provider adecuado según configuración del usuario
 - **Caché de análisis**: cada commit se analiza una vez (SHA único), resultado cacheados
 - **Rate limiting**: respetar límites de GitHub API (caché + delays)
 - **Async primero**: toda operación costosa (sync, análisis) va por Messenger
+- **Scheduler**: auto-sync diario configurable vía `SYNC_INTERVAL` (default: 12h)
 
 ## Comandos disponibles
 
@@ -62,6 +68,7 @@ php bin/console make:entity             # Crear entidad
 php bin/console make:migration          # Generar migración
 php bin/console doctrine:migrations:migrate
 php bin/console messenger:consume async -vv
+php bin/console scheduler:run --verbose  # Procesar tareas programadas
 php bin/console cache:clear
 
 # AssetMapper

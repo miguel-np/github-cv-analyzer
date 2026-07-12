@@ -9,7 +9,7 @@
 └─────────────┘                    │
                                    ▼
 ┌──────────────────────────────────────────────────────────┐
-│                   Symfony 7 (Backend)                     │
+│                  Symfony 7.4 (Backend)                     │
 │                                                          │
 │  ┌──────────┐  ┌──────────┐  ┌───────────────────────┐  │
 │  │Controllers│  │ Messenger│  │    LLM Engine         │  │
@@ -45,7 +45,7 @@ users ──1:N──▶ sync_jobs
 
 users ──1:N──▶ github_accounts
                  │
-                 └──N:N──▶ repositories ──1:N──▶ commits
+                 └──N:N──▶ github_repos ──1:N──▶ commits
                                      │
                                      ├──1:N──▶ pull_requests
                                      │
@@ -53,7 +53,7 @@ users ──1:N──▶ github_accounts
                                      │
                                      └──N:N──▶ technologies
 
-commits ──1:N──▶ analysis_results
+commits ──1:1──▶ analysis_results
 ```
 
 ## Entidades
@@ -66,7 +66,7 @@ Tabla de usuario local (single-user en MVP, multi-user futuro).
 Una cuenta de GitHub vinculada (token cifrado con libsodium).
 - `id`, `user_id`, `github_username`, `encrypted_token`, `last_synced_at`
 
-### Repository
+### GithubRepo
 Repositorio de GitHub donde el usuario ha contribuido.
 - `id`, `github_id`, `full_name`, `description`, `language`
 - `stars`, `forks`, `is_fork`, `is_private`
@@ -109,22 +109,34 @@ Trabajo de sincronización para tracking y reintentos.
 ```php
 interface LlmClientInterface
 {
-    public function chat(string $systemPrompt, string $userPrompt, array $jsonSchema): array;
+    public function chat(string $systemPrompt, string $userPrompt, ?array $jsonSchema = null): array;
+    public function getProviderName(): string;
+    public function getModelName(): string;
 }
 ```
 
+### Factory
+
+```php
+interface LlmFactoryInterface
+{
+    public function create(User $user): LlmClientInterface;
+}
+```
+
+`LlmFactory` instancia el provider adecuado según la configuración del usuario (settings jsonb).
+
 ### Providers
 
-- **OllamaProvider**: llm local, endpoint configurable, modelo configurable (default: llama3)
-- **OpenAiProvider**: API de OpenAI, modelos GPT-4o/GPT-4o-mini
-- **AnthropicProvider**: API de Anthropic, Claude 3.5 Sonnet
+- **OllamaProvider**: LLM local, endpoint configurable, modelo configurable (default: `llama3.2`)
+- **OpenAiProvider**: API de OpenAI, modelos GPT-4o/GPT-4o-mini (default: `gpt-4o-mini`)
+- **AnthropicProvider**: API de Anthropic, Claude (default: `claude-3-5-haiku-latest`)
 
 ### Prompt templates
 
 Cada tipo de análisis tiene su clase de prompt que construye el mensaje estructurado:
 
 - **CommitAnalyzerPrompt**: clasifica un commit a partir de su mensaje + diff
-- **RepoAnalyzerPrompt**: analiza un repositorio completo (tecnologías, propósito)
 - **CvImprovementPrompt**: sugiere mejoras de CV basadas en todas las contribuciones
 
 ### Flujo de análisis
@@ -148,9 +160,34 @@ Cada tipo de análisis tiene su clase de prompt que construye el mensaje estruct
 | `SyncAccountMessage` | Sincronizar todos los repos de una cuenta | `SyncAccountHandler` |
 | `SyncRepositoryMessage` | Sincronizar commits/PRs/issues de un repo | `SyncRepositoryHandler` |
 | `AnalyzeCommitMessage` | Analizar un commit con LLM | `AnalyzeCommitHandler` |
-| `AnalyzeRepositoryMessage` | Analizar un repo completo | `AnalyzeRepositoryHandler` |
+| `TriggerDailySyncMessage` | Señal de sync diario automático (Scheduler) | `TriggerDailySyncHandler` |
 
 ### Transporte
 
 Doctrine transport en desarrollo (simple, sin dependencias extra).
 Redis/RabbitMQ recomendado para producción.
+
+## Scheduler (auto-sync diario)
+
+```php
+#[AsSchedule]
+class Schedule implements ScheduleProviderInterface
+{
+    public function getSchedule(): SymfonySchedule
+    {
+        return (new SymfonySchedule())
+            ->stateful($this->cache)
+            ->processOnlyLastMissedRun(true)
+            ->add(
+                RecurringMessage::every(
+                    $this->syncInterval,       // SYNC_INTERVAL (default: '12 hours')
+                    new TriggerDailySyncMessage()
+                )
+            );
+    }
+}
+```
+
+El `TriggerDailySyncHandler` itera todas las `GithubAccount` activas y dispara `SyncAccountMessage` para cada una.
+
+Ejecución manual: `php bin/console scheduler:run --verbose`

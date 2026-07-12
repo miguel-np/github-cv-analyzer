@@ -4,10 +4,11 @@
 
 ## Objetivo
 
-Crear el proyecto Symfony 7 desde cero con todo el stack de desarrollo configurado y funcionando:
-- PHP 8.3 + PostgreSQL 16 (Docker)
-- Symfony 7 con bundles esenciales
+Crear el proyecto Symfony 7.4 desde cero con todo el stack de desarrollo configurado y funcionando:
+- PHP 8.5 + PostgreSQL 16 (Docker)
+- Symfony 7.4 con bundles esenciales
 - AssetMapper + Turbo + Stimulus + Tailwind CSS v4
+- Scheduler para tareas periódicas
 - Entidades Doctrine base con migraciones
 - Estructura de directorios del proyecto
 
@@ -16,15 +17,15 @@ Crear el proyecto Symfony 7 desde cero con todo el stack de desarrollo configura
 ### 1. Crear proyecto Symfony
 
 ```bash
-docker run --rm -v $(pwd):/app composer create-project symfony/skeleton:"7.2.*" /tmp/symfony
+docker run --rm -v $(pwd):/app composer create-project symfony/skeleton:"7.4.*" /tmp/symfony
 ```
 
-### 2. Docker Compose (PHP + PostgreSQL + Redis)
+### 2. Docker Compose (PHP + PostgreSQL)
 
 ```yaml
 services:
   php:
-    image: php:8.3-cli
+    image: php:8.5-cli
     # ...
   database:
     image: postgres:16
@@ -37,6 +38,7 @@ services:
 doctrine/doctrine-bundle
 doctrine/doctrine-migrations-bundle
 symfony/messenger
+symfony/scheduler
 symfony/asset-mapper
 symfony/stimulus-bundle
 symfony/ux-turbo
@@ -58,8 +60,13 @@ DATABASE_URL="postgresql://app:app@database:5432/github_cv?serverVersion=16&char
 
 - `App\Entity\User`
 - `App\Entity\GithubAccount`
-- `App\Entity\Repository`
+- `App\Entity\GithubRepo`
 - `App\Entity\SyncJob`
+- `App\Entity\Commit`
+- `App\Entity\PullRequest`
+- `App\Entity\Issue`
+- `App\Entity\Technology`
+- `App\Entity\AnalysisResult`
 
 ### 6. Migraciones
 
@@ -79,11 +86,14 @@ src/
 │   ├── GitHub/
 │   └── Analysis/
 │       ├── Provider/
-│       └── Prompt/
+│       ├── Prompt/
+│       └── Shared/
 ├── Message/
 ├── MessageHandler/
 ├── Twig/Components/
-└── Stimulus/
+├── Stimulus/
+├── Kernel.php
+└── Schedule.php
 ```
 
 ### 8. Layout base + Dashboard placeholder
@@ -113,6 +123,9 @@ php bin/console tailwind:build
 
 # Verificar Messenger
 php bin/console debug:messenger
+
+# Verificar Scheduler
+php bin/console scheduler:list
 
 # Navegador
 open http://localhost:8000
