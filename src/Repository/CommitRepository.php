@@ -45,22 +45,22 @@ class CommitRepository extends ServiceEntityRepository
             return [];
         }
 
-        $results = $this->createQueryBuilder('c')
-            ->select('a.classification')
-            ->join('c.analysisResult', 'a')
-            ->where('c.repository IN (:ids)')
-            ->setParameter('ids', $repoIds)
-            ->getQuery()
-            ->getArrayResult();
+        $conn = $this->getEntityManager()->getConnection();
 
-        $counts = [];
+        $sql = "
+            SELECT
+                COALESCE(a.classification->>'classification', 'unknown') AS type,
+                COUNT(*) AS cnt
+            FROM commits c
+            JOIN analysis_results a ON a.commit_id = c.id
+            WHERE c.repository_id IN (:ids)
+            GROUP BY type
+            ORDER BY cnt DESC
+        ";
 
-        foreach ($results as $row) {
-            $type = $row['classification']['classification'] ?? 'unknown';
-            $counts[$type] = ($counts[$type] ?? 0) + 1;
-        }
+        $rows = $conn->executeQuery($sql, ['ids' => $repoIds], ['ids' => \Doctrine\DBAL\ArrayParameterType::INTEGER]);
 
-        return array_map(fn ($k, $v) => ['classification' => $k, 'count' => $v], array_keys($counts), $counts);
+        return array_map(fn ($r) => ['classification' => $r['type'], 'count' => (int) $r['cnt']], $rows->fetchAllAssociative());
     }
 
     /**
@@ -83,5 +83,22 @@ class CommitRepository extends ServiceEntityRepository
             ->setMaxResults(10)
             ->getQuery()
             ->getArrayResult();
+    }
+
+    /**
+     * @param int $repoId
+     * @return Commit[]
+     */
+    public function findByRepoWithAnalysis(int $repoId, int $limit = 50): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.analysisResult', 'a')
+            ->addSelect('a')
+            ->where('c.repository = :repoId')
+            ->setParameter('repoId', $repoId)
+            ->orderBy('c.date', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 }

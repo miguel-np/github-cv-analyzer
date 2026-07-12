@@ -38,7 +38,7 @@ class DashboardController extends AbstractController
         if ($account) {
             $stats['repositories'] = $account->getGithubRepos()->count();
 
-            $repoIds = $account->getGithubRepos()->map(fn ($r) => $r->getId())->toArray();
+            $repoIds = $repoRepo->findRepoIdsByAccount($account);
             if (count($repoIds) > 0) {
                 $stats['commits'] = $repoRepo->countCommitsByIds($repoIds);
                 $stats['pull_requests'] = $repoRepo->countPullRequestsByIds($repoIds);

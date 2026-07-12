@@ -6,6 +6,7 @@ namespace App\Service\Analysis;
 
 use App\Entity\GithubRepo;
 use App\Repository\CommitRepository;
+use App\Service\Analysis\Shared\TechnologyHelper;
 use Psr\Log\LoggerInterface;
 
 final readonly class TechnologyDetector
@@ -43,7 +44,7 @@ final readonly class TechnologyDetector
             $technologies = $classification['technologies_found'] ?? [];
 
             foreach ($technologies as $tech) {
-                $tech = mb_strtolower(trim((string) $tech));
+                $tech = TechnologyHelper::normalize((string) $tech);
                 if ($tech === '') {
                     continue;
                 }

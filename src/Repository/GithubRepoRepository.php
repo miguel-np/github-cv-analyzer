@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\GithubAccount;
 use App\Entity\GithubRepo;
+use App\Service\Analysis\Shared\TechnologyHelper;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -13,6 +15,22 @@ class GithubRepoRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, GithubRepo::class);
+    }
+
+    /**
+     * @return int[]
+     */
+    public function findRepoIdsByAccount(GithubAccount $account): array
+    {
+        $ids = $this->createQueryBuilder('r')
+            ->select('r.id')
+            ->join('r.contributors', 'c')
+            ->where('c.id = :accountId')
+            ->setParameter('accountId', $account->getId())
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        return array_map('intval', $ids);
     }
 
     /**
@@ -79,33 +97,26 @@ class GithubRepoRepository extends ServiceEntityRepository
             return [];
         }
 
-        $results = $this->createQueryBuilder('r')
-            ->select('a.classification')
-            ->join('r.commits', 'c')
-            ->join('c.analysisResult', 'a')
-            ->where('r.id IN (:ids)')
-            ->setParameter('ids', $repoIds)
-            ->getQuery()
-            ->getArrayResult();
+        $conn = $this->getEntityManager()->getConnection();
 
-        $techCounts = [];
+        $sql = "
+            SELECT
+                tech.value AS name,
+                COUNT(*) AS cnt
+            FROM commits c
+            JOIN analysis_results a ON a.commit_id = c.id,
+                 LATERAL jsonb_array_elements_text(a.classification->'technologies_found') AS tech(value)
+            WHERE c.repository_id IN (:ids)
+            GROUP BY tech.value
+            ORDER BY cnt DESC
+            LIMIT 12
+        ";
 
-        foreach ($results as $row) {
-            $technologies = $row['classification']['technologies_found'] ?? [];
-            foreach ($technologies as $tech) {
-                $tech = mb_strtolower(trim((string) $tech));
-                if ($tech !== '') {
-                    $techCounts[$tech] = ($techCounts[$tech] ?? 0) + 1;
-                }
-            }
-        }
-
-        arsort($techCounts);
+        $rows = $conn->executeQuery($sql, ['ids' => $repoIds], ['ids' => \Doctrine\DBAL\ArrayParameterType::INTEGER]);
 
         return array_map(
-            fn ($k, $v) => ['name' => $k, 'count' => $v],
-            array_keys(array_slice($techCounts, 0, 12)),
-            array_slice($techCounts, 0, 12)
+            fn ($r) => ['name' => TechnologyHelper::normalize($r['name']), 'count' => (int) $r['cnt']],
+            $rows->fetchAllAssociative()
         );
     }
 }

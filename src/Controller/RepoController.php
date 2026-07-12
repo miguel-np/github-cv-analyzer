@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Repository\CommitRepository;
 use App\Repository\GithubRepoRepository;
+use App\Service\Analysis\Shared\TechnologyHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,14 +25,11 @@ class RepoController extends AbstractController
             throw $this->createNotFoundException('Repository not found');
         }
 
-        $commits = $commitRepo->findBy(
-            ['repository' => $repo],
-            ['date' => 'DESC'],
-            50
-        );
+        $commits = $commitRepo->findByRepoWithAnalysis($id);
 
         $classificationCounts = [];
         $techCounts = [];
+        $classificationTotal = 0;
 
         foreach ($commits as $commit) {
             $analysis = $commit->getAnalysisResult();
@@ -39,9 +37,10 @@ class RepoController extends AbstractController
                 $clf = $analysis->getClassification();
                 $type = $clf['classification'] ?? 'unknown';
                 $classificationCounts[$type] = ($classificationCounts[$type] ?? 0) + 1;
+                ++$classificationTotal;
 
                 foreach ($clf['technologies_found'] ?? [] as $tech) {
-                    $tech = mb_strtolower(trim((string) $tech));
+                    $tech = TechnologyHelper::normalize($tech);
                     if ($tech !== '') {
                         $techCounts[$tech] = ($techCounts[$tech] ?? 0) + 1;
                     }
@@ -56,6 +55,7 @@ class RepoController extends AbstractController
             'repo' => $repo,
             'commits' => $commits,
             'classificationCounts' => $classificationCounts,
+            'classificationTotal' => $classificationTotal,
             'techCounts' => array_slice($techCounts, 0, 15),
         ]);
     }
