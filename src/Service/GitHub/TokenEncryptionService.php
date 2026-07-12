@@ -8,13 +8,19 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class TokenEncryptionService
 {
+    private const HASH_CONTEXT = 'github_cv_analyzer_token_key_v1';
+
     private string $key;
 
     public function __construct(
         #[Autowire('%env(APP_SECRET)%')]
         string $appSecret,
     ) {
-        $this->key = sodium_crypto_generichash($appSecret, '', SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES);
+        $this->key = sodium_crypto_generichash(
+            $appSecret,
+            self::HASH_CONTEXT,
+            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES
+        );
     }
 
     public function encrypt(string $token): string

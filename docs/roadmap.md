@@ -4,12 +4,12 @@
 
 | # | Fase | Esfuerzo | Complejidad | Impacto |
 |---|------|:--------:|:-----------:|:-------:|
-| 1 | Foundation | 🟡 3-4h | 🟢 Baja | 🔴 Crítico |
-| 2 | GitHub Integration | 🟡 4-5h | 🟡 Media | 🟠 Alto |
-| 3 | Data Collection | 🔴 8-10h | 🟡 Media | 🔴 Crítico |
-| 4 | LLM Analysis Engine | 🔴 6-8h | 🔴 Alta | 🟣 Muy Alto |
-| 5 | Dashboard & UI | 🔴 8-12h | 🟡 Media | 🟣 Muy Alto |
-| 6 | CV Analysis | 🟡 4-6h | 🔵 Baja | 🟠 Alto |
+| 1 | Foundation | 🟡 3-4h | 🟢 Baja | 🔴 Crítico | &#10003; |
+| 2 | GitHub Integration | 🟡 4-5h | 🟡 Media | 🟠 Alto | &#10003; |
+| 3 | Data Collection | 🔴 8-10h | 🟡 Media | 🔴 Crítico | |
+| 4 | LLM Analysis Engine | 🔴 6-8h | 🔴 Alta | 🟣 Muy Alto | |
+| 5 | Dashboard & UI | 🔴 8-12h | 🟡 Media | 🟣 Muy Alto | |
+| 6 | CV Analysis | 🟡 4-6h | 🔵 Baja | 🟠 Alto | |
 
 **Total estimado**: 35-42 horas
 
@@ -47,12 +47,12 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 **Objetivo**: Conexión con GitHub API y almacenamiento seguro del token.
 
 **Entregables**:
-- [ ] Instalación e integración de `knplabs/github-api`
-- [ ] Servicio `GitHubClient` con autenticación por token
-- [ ] Cifrado/descifrado de token con libsodium
-- [ ] Formulario de settings para configurar token
-- [ ] Endpoint de verificación de token (lista repos del usuario)
-- [ ] Sincronización básica: listar repos y guardar en BD
+- [x] Instalación e integración de `knplabs/github-api`
+- [x] Servicio `GitHubClient` con autenticación por token
+- [x] Cifrado/descifrado de token con libsodium
+- [x] Formulario de settings para configurar token
+- [x] Endpoint de verificación de token (lista repos del usuario)
+- [x] Sincronización básica: listar repos y guardar en BD
 
 ---
 

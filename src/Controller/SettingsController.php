@@ -12,6 +12,7 @@ use App\Service\GitHub\GitHubClient;
 use App\Service\GitHub\GitHubSyncService;
 use App\Service\GitHub\TokenEncryptionService;
 use Doctrine\ORM\EntityManagerInterface;
+use Github\Exception\RuntimeException as GithubRuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,6 +20,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class SettingsController extends AbstractController
 {
+    private const EMAIL_DEFAULT = 'default@local.dev';
+
     #[Route('/settings', name: 'app_settings')]
     public function index(
         Request $request,
@@ -36,9 +39,9 @@ class SettingsController extends AbstractController
         $request->getSession()->remove('github_verification');
 
         if ($request->isMethod('POST') && $this->isCsrfTokenValid('settings', $request->request->get('_token'))) {
-            $token = $request->request->get('github_token', '');
+            $token = trim($request->request->get('github_token', ''));
 
-            if (empty(trim($token))) {
+            if ($token === '') {
                 $this->addFlash('error', 'El token de GitHub no puede estar vacío.');
 
                 return $this->redirectToRoute('app_settings');
@@ -61,13 +64,16 @@ class SettingsController extends AbstractController
                 $repos = $syncService->syncRepositories($account);
 
                 $this->addFlash('success', sprintf(
-                    'Cuenta conectada como **%s**. %d repositorios sincronizados.',
+                    'Cuenta conectada como %s. %d repositorios sincronizados.',
                     $username,
                     count($repos)
                 ));
+            } catch (GithubRuntimeException $e) {
+                $this->addFlash('error', 'Credenciales de GitHub inválidas. Verifica el token.');
+            } catch (\RuntimeException $e) {
+                $this->addFlash('error', 'Error de conexión con GitHub. Inténtalo de nuevo.');
             } catch (\Throwable $e) {
-                $em->clear();
-                $this->addFlash('error', 'Error al conectar con GitHub: ' . $e->getMessage());
+                $this->addFlash('error', 'Error inesperado al sincronizar.');
             }
 
             return $this->redirectToRoute('app_settings');
@@ -85,9 +91,9 @@ class SettingsController extends AbstractController
         TokenEncryptionService $tokenEncryption,
         GitHubClient $gitHubClient,
     ): Response {
-        $token = $request->request->get('github_token', '');
+        $token = trim($request->request->get('github_token', ''));
 
-        if (empty(trim($token)) || !$this->isCsrfTokenValid('verify', $request->request->get('_token'))) {
+        if ($token === '' || !$this->isCsrfTokenValid('verify', $request->request->get('_token'))) {
             return $this->redirectToRoute('app_settings');
         }
 
@@ -100,10 +106,15 @@ class SettingsController extends AbstractController
                 'success' => true,
                 'username' => $username,
             ]);
-        } catch (\Throwable $e) {
+        } catch (GithubRuntimeException $e) {
             $request->getSession()->set('github_verification', [
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error' => 'Token inválido o expirado.',
+            ]);
+        } catch (\Throwable) {
+            $request->getSession()->set('github_verification', [
+                'success' => false,
+                'error' => 'Error de conexión con GitHub.',
             ]);
         }
 
@@ -112,14 +123,14 @@ class SettingsController extends AbstractController
 
     private function getOrCreateUser(EntityManagerInterface $em, UserRepository $userRepo): User
     {
-        $users = $userRepo->findAll();
+        $user = $userRepo->findOneBy([]);
 
-        if (count($users) > 0) {
-            return $users[0];
+        if ($user !== null) {
+            return $user;
         }
 
         $user = new User();
-        $user->setEmail('default@local.dev');
+        $user->setEmail(self::EMAIL_DEFAULT);
         $em->persist($user);
         $em->flush();
 

@@ -22,17 +22,23 @@ final readonly class GitHubSyncService
     {
         $this->client->authenticate($account->getEncryptedToken());
 
-        $repos = $this->client->listRepositories();
+        $existingByGithubId = $this->loadExistingRepos();
         $synced = [];
-        $skipped = 0;
 
-        foreach ($repos as $repoData) {
+        foreach ($this->client->listRepositories() as $repoData) {
             if ($repoData['fork'] && !$this->hasContributions($repoData)) {
-                ++$skipped;
                 continue;
             }
 
-            $githubRepo = $this->findOrCreateRepo($repoData);
+            $githubRepo = $existingByGithubId[$repoData['id']] ?? null;
+
+            if ($githubRepo === null) {
+                $githubRepo = new GithubRepo();
+                $this->em->persist($githubRepo);
+                $existingByGithubId[$repoData['id']] = $githubRepo;
+            }
+
+            $this->updateRepo($githubRepo, $repoData);
             $account->getGithubRepos()->contains($githubRepo) ?: $account->getGithubRepos()->add($githubRepo);
 
             $synced[] = $githubRepo;
@@ -44,21 +50,28 @@ final readonly class GitHubSyncService
         $this->logger->info('GitHub sync completed', [
             'account' => $account->getGithubUsername(),
             'synced' => count($synced),
-            'skipped' => $skipped,
         ]);
 
         return $synced;
     }
 
-    private function findOrCreateRepo(array $repoData): GithubRepo
+    /**
+     * @return array<int, GithubRepo>
+     */
+    private function loadExistingRepos(): array
     {
-        $repo = $this->em->getRepository(GithubRepo::class)->findOneBy(['githubId' => $repoData['id']]);
+        $repos = $this->em->getRepository(GithubRepo::class)->findAll();
+        $indexed = [];
 
-        if (!$repo) {
-            $repo = new GithubRepo();
-            $this->em->persist($repo);
+        foreach ($repos as $repo) {
+            $indexed[$repo->getGithubId()] = $repo;
         }
 
+        return $indexed;
+    }
+
+    private function updateRepo(GithubRepo $repo, array $repoData): void
+    {
         $repo->setGithubId($repoData['id']);
         $repo->setFullName($repoData['full_name']);
         $repo->setName($repoData['name']);
@@ -73,13 +86,11 @@ final readonly class GitHubSyncService
             'homepage' => $repoData['homepage'] ?? null,
             'license' => $repoData['license']['spdx_id'] ?? null,
         ]);
-
-        return $repo;
     }
 
     private function hasContributions(array $repoData): bool
     {
-        return $repoData['permissions']['push'] ?? false
-            || $repoData['permissions']['admin'] ?? false;
+        return ($repoData['permissions']['push'] ?? false)
+            || ($repoData['permissions']['admin'] ?? false);
     }
 }
