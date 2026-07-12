@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Repository\CommitRepository;
 use App\Repository\GithubAccountRepository;
 use App\Repository\GithubRepoRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,6 +17,7 @@ class DashboardController extends AbstractController
     public function index(
         GithubAccountRepository $accountRepo,
         GithubRepoRepository $repoRepo,
+        CommitRepository $commitRepo,
     ): Response {
         $account = $accountRepo->findOneBy([]);
 
@@ -26,6 +28,13 @@ class DashboardController extends AbstractController
             'issues' => 0,
         ];
 
+        $chartData = [
+            'timeline' => [],
+            'classification' => [],
+            'topRepos' => [],
+            'technologies' => [],
+        ];
+
         if ($account) {
             $stats['repositories'] = $account->getGithubRepos()->count();
 
@@ -34,12 +43,18 @@ class DashboardController extends AbstractController
                 $stats['commits'] = $repoRepo->countCommitsByIds($repoIds);
                 $stats['pull_requests'] = $repoRepo->countPullRequestsByIds($repoIds);
                 $stats['issues'] = $repoRepo->countIssuesByIds($repoIds);
+
+                $chartData['timeline'] = $commitRepo->countByMonth($repoIds);
+                $chartData['classification'] = $commitRepo->countByClassification($repoIds);
+                $chartData['topRepos'] = $commitRepo->countByRepo($repoIds);
+                $chartData['technologies'] = $repoRepo->getTopTechnologies($repoIds);
             }
         }
 
         return $this->render('dashboard/index.html.twig', [
             'account' => $account,
             'stats' => $stats,
+            'chartData' => $chartData,
         ]);
     }
 }

@@ -68,4 +68,44 @@ class GithubRepoRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * @param int[] $repoIds
+     * @return array<array{name: string, count: int}>
+     */
+    public function getTopTechnologies(array $repoIds): array
+    {
+        if (count($repoIds) === 0) {
+            return [];
+        }
+
+        $results = $this->createQueryBuilder('r')
+            ->select('a.classification')
+            ->join('r.commits', 'c')
+            ->join('c.analysisResult', 'a')
+            ->where('r.id IN (:ids)')
+            ->setParameter('ids', $repoIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        $techCounts = [];
+
+        foreach ($results as $row) {
+            $technologies = $row['classification']['technologies_found'] ?? [];
+            foreach ($technologies as $tech) {
+                $tech = mb_strtolower(trim((string) $tech));
+                if ($tech !== '') {
+                    $techCounts[$tech] = ($techCounts[$tech] ?? 0) + 1;
+                }
+            }
+        }
+
+        arsort($techCounts);
+
+        return array_map(
+            fn ($k, $v) => ['name' => $k, 'count' => $v],
+            array_keys(array_slice($techCounts, 0, 12)),
+            array_slice($techCounts, 0, 12)
+        );
+    }
 }

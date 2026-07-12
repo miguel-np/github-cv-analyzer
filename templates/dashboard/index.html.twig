@@ -6,33 +6,34 @@
 <div class="mb-8">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        Welcome to your GitHub contribution analysis dashboard.
+        {% if account %}
+            Analyzing {{ account.githubUsername }}'s contributions
+        {% else %}
+            Welcome to your GitHub contribution analysis dashboard.
+        {% endif %}
     </p>
 </div>
 
+{% if account %}
 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-{% set cards = [
-    { label: 'Repositories', value: stats.repositories, class: 'bg-blue-500' },
-    { label: 'Commits', value: stats.commits, class: 'bg-green-500' },
-    { label: 'Pull Requests', value: stats.pull_requests, class: 'bg-purple-500' },
-    { label: 'Issues', value: stats.issues, class: 'bg-amber-500' },
-] %}
+    {% set cards = [
+        { label: 'Repositories', value: stats.repositories, class: 'bg-blue-500' },
+        { label: 'Commits', value: stats.commits, class: 'bg-green-500' },
+        { label: 'Pull Requests', value: stats.pull_requests, class: 'bg-purple-500' },
+        { label: 'Issues', value: stats.issues, class: 'bg-amber-500' },
+    ] %}
 
-{% for card in cards %}
-    <div class="overflow-hidden rounded-lg bg-white dark:bg-gray-900 shadow">
-        <div class="p-5">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-3 h-3 rounded-full {{ card.class }}"></div>
-                </div>
+    {% for card in cards %}
+        <div class="overflow-hidden rounded-lg bg-white dark:bg-gray-900 shadow">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-3 h-3 rounded-full {{ card.class }}"></div>
+                    </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                                {{ card.label }}
-                            </dt>
-                            <dd class="text-3xl font-semibold text-gray-900 dark:text-white">
-                                {{ card.value }}
-                            </dd>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{{ card.label }}</dt>
+                            <dd class="text-3xl font-semibold text-gray-900 dark:text-white">{{ card.value }}</dd>
                         </dl>
                     </div>
                 </div>
@@ -41,36 +42,125 @@
     {% endfor %}
 </div>
 
-<div class="mt-8 rounded-lg bg-white dark:bg-gray-900 shadow p-8 text-center">
-    <div class="mx-auto max-w-md">
-        {% if account %}
-            <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-                Connected as {{ account.githubUsername }}
-            </h3>
-            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Your repositories are synced. Head to Settings to reconfigure or analyze new data.
-            </p>
-        {% else %}
+{% if chartData.timeline|length > 0 %}
+<div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contribution Timeline</h3>
+        <div class="mt-4 h-64" {{ stimulus_controller('dashboard-chart', {
+            type: 'bar',
+            data: {
+                labels: chartData.timeline|map(t => t.month),
+                datasets: [{
+                    label: 'Commits',
+                    data: chartData.timeline|map(t => t.count),
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 4,
+                }]
+            }|json_encode,
+        }) }}>
+            <canvas></canvas>
+        </div>
+    </div>
+
+    <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Classification Breakdown</h3>
+        <div class="mt-4 h-64" {{ stimulus_controller('dashboard-chart', {
+            type: 'doughnut',
+            data: {
+                labels: chartData.classification|map(c => c.classification),
+                datasets: [{
+                    data: chartData.classification|map(c => c.count),
+                    backgroundColor: ['#3b82f6', '#22c55e', '#a855f7', '#eab308', '#ef4444', '#f97316', '#06b6d4'],
+                }]
+            }|json_encode,
+        }) }}>
+            <canvas></canvas>
+        </div>
+    </div>
+
+    <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Top Repositories</h3>
+        <div class="mt-4 h-64" {{ stimulus_controller('dashboard-chart', {
+            type: 'bar',
+            data: {
+                labels: chartData.topRepos|map(r => r.name),
+                datasets: [{
+                    label: 'Commits',
+                    data: chartData.topRepos|map(r => r.count),
+                    backgroundColor: '#8b5cf6',
+                    borderRadius: 4,
+                }]
+            }|json_encode,
+            options: { indexAxis: 'y' }|json_encode,
+        }) }}>
+            <canvas></canvas>
+        </div>
+    </div>
+
+    <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6">
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Technology Radar</h3>
+        <div class="mt-4 h-64" {{ stimulus_controller('dashboard-chart', {
+            type: 'radar',
+            data: {
+                labels: chartData.technologies|map(t => t.name),
+                datasets: [{
+                    label: 'Frequency',
+                    data: chartData.technologies|map(t => t.count),
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    pointBackgroundColor: '#3b82f6',
+                }]
+            }|json_encode,
+        }) }}>
+            <canvas></canvas>
+        </div>
+    </div>
+</div>
+
+{% if account.githubRepos|length > 0 %}
+<div class="mt-8">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Repositories</h2>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for repo in account.githubRepos %}
+            <a href="{{ path('app_repo_detail', {id: repo.id}) }}"
+               class="block rounded-lg bg-white dark:bg-gray-900 shadow p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ repo.name }}</h4>
+                    {% if repo.language %}
+                        <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">{{ repo.language }}</span>
+                    {% endif %}
+                </div>
+                {% if repo.description %}
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{{ repo.description }}</p>
+                {% endif %}
+                <div class="mt-2 flex items-center space-x-3 text-xs text-gray-400">
+                    <span>&#x2605; {{ repo.stars }}</span>
+                    <span>&#x2442; {{ repo.forks }}</span>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+    <div class="mt-8 rounded-lg bg-white dark:bg-gray-900 shadow p-8 text-center">
+        <div class="mx-auto max-w-md">
             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                     d="M11.42 15.17l-4.25-4.25m0 0l4.25-4.25m-4.25 4.25h11.66" />
             </svg>
-            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-                Connect your GitHub account
-            </h3>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Connect your GitHub account</h3>
             <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 Head to Settings to link your GitHub account and start analyzing your contributions.
             </p>
-        {% endif %}
-        <div class="mt-6">
-            <a href="{{ path('app_settings') }}"
-                class="inline-flex items-center rounded-md bg-gray-800 dark:bg-white px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 shadow-sm hover:bg-gray-700 dark:hover:bg-gray-100">
-                {{ account ? 'Manage Settings' : 'Go to Settings' }} &rarr;
-            </a>
+            <div class="mt-6">
+                <a href="{{ path('app_settings') }}" class="inline-flex items-center rounded-md bg-gray-800 dark:bg-white px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 shadow-sm hover:bg-gray-700 dark:hover:bg-gray-100">
+                    Go to Settings &rarr;
+                </a>
+            </div>
         </div>
     </div>
-</div>
+{% endif %}
+{% endif %}
 {% endblock %}
