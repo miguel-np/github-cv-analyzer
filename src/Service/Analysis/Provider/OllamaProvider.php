@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Analysis\Provider;
 
 use App\Service\Analysis\LlmClientInterface;
+use App\Service\Analysis\Shared\JsonHelper;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class OllamaProvider implements LlmClientInterface
@@ -47,18 +48,13 @@ final readonly class OllamaProvider implements LlmClientInterface
         $data = $response->toArray();
 
         $content = $data['message']['content'] ?? '';
-        $decoded = json_decode($this->extractJson($content), true);
+        $decoded = json_decode(JsonHelper::extract($content), true);
 
         if (!is_array($decoded)) {
             throw new \RuntimeException('Ollama returned invalid JSON: ' . $content);
         }
 
         return $decoded;
-    }
-
-    public function supportsStructuredOutput(): bool
-    {
-        return true;
     }
 
     public function getProviderName(): string
@@ -69,17 +65,5 @@ final readonly class OllamaProvider implements LlmClientInterface
     public function getModelName(): string
     {
         return $this->model;
-    }
-
-    private function extractJson(string $text): string
-    {
-        $start = strpos($text, '{');
-        $end = strrpos($text, '}');
-
-        if ($start !== false && $end !== false) {
-            return substr($text, $start, $end - $start + 1);
-        }
-
-        return $text;
     }
 }

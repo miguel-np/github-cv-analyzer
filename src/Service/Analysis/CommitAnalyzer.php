@@ -25,42 +25,33 @@ final readonly class CommitAnalyzer
         $llm = $this->llmFactory->create($user);
         $startTime = hrtime(true);
 
-        try {
-            $response = $llm->chat(
-                CommitAnalyzerPrompt::getSystemPrompt(),
-                CommitAnalyzerPrompt::getUserPrompt(
-                    $commit->getMessage(),
-                    $commit->getDiffStats()
-                ),
-                CommitAnalyzerPrompt::getJsonSchema()
-            );
+        $response = $llm->chat(
+            CommitAnalyzerPrompt::getSystemPrompt(),
+            CommitAnalyzerPrompt::getUserPrompt(
+                $commit->getMessage(),
+                $commit->getDiffStats()
+            ),
+            CommitAnalyzerPrompt::getJsonSchema()
+        );
 
-            $durationMs = (int) ((hrtime(true) - $startTime) / 1_000_000);
+        $durationMs = (int) ((hrtime(true) - $startTime) / 1_000_000);
 
-            $result = new AnalysisResult();
-            $result->setCommit($commit);
-            $result->setProvider($llm->getProviderName());
-            $result->setModel($llm->getModelName());
-            $result->setClassification($response);
-            $result->setDurationMs($durationMs);
+        $result = new AnalysisResult();
+        $result->setCommit($commit);
+        $result->setProvider($llm->getProviderName());
+        $result->setModel($llm->getModelName());
+        $result->setClassification($response);
+        $result->setDurationMs($durationMs);
 
-            $this->em->persist($result);
+        $this->em->persist($result);
 
-            $this->logger->info('Commit analyzed', [
-                'sha' => substr($commit->getSha(), 0, 7),
-                'classification' => $response['classification'] ?? 'unknown',
-                'provider' => $llm->getProviderName(),
-            ]);
+        $this->logger->info('Commit analyzed', [
+            'sha' => substr($commit->getSha(), 0, 7),
+            'classification' => $response['classification'] ?? 'unknown',
+            'provider' => $llm->getProviderName(),
+        ]);
 
-            return $result;
-        } catch (\Throwable $e) {
-            $this->logger->error('Commit analysis failed', [
-                'sha' => substr($commit->getSha(), 0, 7),
-                'error' => $e->getMessage(),
-            ]);
-
-            throw $e;
-        }
+        return $result;
     }
 
     public function analyzeBatch(array $commits, User $user): int

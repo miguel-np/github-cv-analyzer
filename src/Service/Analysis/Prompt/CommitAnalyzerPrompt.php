@@ -101,7 +101,7 @@ PROMPT;
 
         foreach ($files as $file) {
             $ext = pathinfo($file, PATHINFO_EXTENSION);
-            if ($ext !== '' && $ext !== '') {
+            if ($ext !== '') {
                 $exts[$ext] = true;
             }
         }

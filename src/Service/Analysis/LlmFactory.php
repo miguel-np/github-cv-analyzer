@@ -45,29 +45,4 @@ final readonly class LlmFactory
             ),
         };
     }
-
-    public function createFromSettings(array $settings): LlmClientInterface
-    {
-        $provider = $settings['llm_provider'] ?? 'ollama';
-        $model = $settings['llm_model'] ?? null;
-        $apiKey = $settings['llm_api_key'] ?? null;
-
-        return match ($provider) {
-            'openai' => new OpenAiProvider(
-                $this->httpClient,
-                $apiKey ?? throw new \RuntimeException('OpenAI API key not configured'),
-                $model ?? 'gpt-4o-mini',
-            ),
-            'anthropic' => new AnthropicProvider(
-                $this->httpClient,
-                $apiKey ?? throw new \RuntimeException('Anthropic API key not configured'),
-                $model ?? 'claude-3-5-haiku-latest',
-            ),
-            default => new OllamaProvider(
-                $this->httpClient,
-                $settings['ollama_host'] ?? 'http://localhost:11434',
-                $model ?? 'llama3.2',
-            ),
-        };
-    }
 }

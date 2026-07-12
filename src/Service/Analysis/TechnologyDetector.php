@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace App\Service\Analysis;
 
 use App\Entity\GithubRepo;
-use App\Entity\User;
 use App\Repository\CommitRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 final readonly class TechnologyDetector
 {
     public function __construct(
-        private EntityManagerInterface $em,
+        private CommitRepository $commitRepo,
         private LoggerInterface $logger,
     ) {
     }
@@ -25,10 +23,11 @@ final readonly class TechnologyDetector
      */
     public function detect(GithubRepo $repo): array
     {
-        $commits = $this->em->getRepository(CommitRepository::class)->createQueryBuilder('c')
+        $commits = $this->commitRepo->createQueryBuilder('c')
             ->join('c.analysisResult', 'a')
             ->where('c.repository = :repo')
             ->setParameter('repo', $repo)
+            ->setMaxResults(200)
             ->getQuery()
             ->getResult();
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\MessageHandler;
 
 use App\Entity\Commit;
-use App\Entity\User;
 use App\Message\AnalyzeCommitMessage;
 use App\Repository\UserRepository;
 use App\Service\Analysis\CommitAnalyzer;

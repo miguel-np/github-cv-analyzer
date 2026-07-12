@@ -66,11 +66,6 @@ final readonly class OpenAiProvider implements LlmClientInterface
         return $decoded;
     }
 
-    public function supportsStructuredOutput(): bool
-    {
-        return true;
-    }
-
     public function getProviderName(): string
     {
         return 'openai';
