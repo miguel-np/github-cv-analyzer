@@ -105,7 +105,7 @@ class GithubRepoRepository extends ServiceEntityRepository
                 COUNT(*) AS cnt
             FROM commits c
             JOIN analysis_results a ON a.commit_id = c.id,
-                 LATERAL jsonb_array_elements_text(a.classification->'technologies_found') AS tech(value)
+                 LATERAL json_array_elements_text(a.classification->'technologies_found') AS tech(value)
             WHERE c.repository_id IN (:ids)
             GROUP BY tech.value
             ORDER BY cnt DESC

@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: PHP CS Fixer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: php-cs-fixer
+      - run: php-cs-fixer fix --dry-run --diff
+
+  static-analysis:
+    name: PHPStan (level 8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: pdo, pdo_pgsql, sodium, intl, zip
+      - uses: ramsey/composer-install@v3
+      - run: php vendor/bin/phpstan analyse --no-progress
+
+  tests:
+    name: PHPUnit
+    needs: [lint, static-analysis]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: app_test
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: app_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: pdo, pdo_pgsql, sodium, intl, zip
+      - uses: ramsey/composer-install@v3
+      - name: Run tests
+        run: php vendor/bin/phpunit
+        env:
+          DATABASE_URL: "postgresql://app_test:test_password@127.0.0.1:5432/app_test?serverVersion=16&charset=utf8"
+          APP_ENV: test
+          APP_SECRET: ci-test-secret-32-chars-minimum

@@ -74,6 +74,10 @@ final class CvImprovementAnalyzerTest extends KernelTestCase
         $account->getGithubRepos()->add($repo);
         $repo->getContributors()->add($account);
 
+        $em = self::getContainer()->get(\Doctrine\ORM\EntityManagerInterface::class);
+        \assert($em instanceof \Doctrine\ORM\EntityManagerInterface);
+        $em->flush();
+
         $commit = CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'cv-analysis-sha',

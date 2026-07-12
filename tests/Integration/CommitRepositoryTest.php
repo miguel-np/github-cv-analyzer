@@ -161,14 +161,16 @@ final class CommitRepositoryTest extends KernelTestCase
         $commit1 = CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'eager-sha-1',
+            'date' => new \DateTimeImmutable('2026-01-01'),
         ])->_real();
         $commit2 = CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'eager-sha-2',
+            'date' => new \DateTimeImmutable('2026-06-01'),
         ])->_real();
 
         AnalysisResultFactory::createOne([
-            'commit' => $commit1,
+            'commit' => $commit2,
             'classification' => $this->buildClassification('feature'),
         ]);
 

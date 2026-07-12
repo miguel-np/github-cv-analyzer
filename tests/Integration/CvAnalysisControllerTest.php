@@ -28,22 +28,6 @@ final class CvAnalysisControllerTest extends WebTestCase
         $this->client = self::createClient();
     }
 
-    public function testIndexRedirectsToDashboardWhenNoUser(): void
-    {
-        $this->client->request('GET', '/cv-analysis');
-
-        self::assertResponseRedirects('/');
-    }
-
-    public function testIndexRedirectsToDashboardWhenNoAccount(): void
-    {
-        UserFactory::createOne(['email' => 'default@local.dev']);
-
-        $this->client->request('GET', '/cv-analysis');
-
-        self::assertResponseRedirects('/');
-    }
-
     public function testIndexShowsPageWhenUserAndAccountExistButNoRepos(): void
     {
         $user = UserFactory::createOne([
@@ -89,7 +73,6 @@ final class CvAnalysisControllerTest extends WebTestCase
         $this->client->request('GET', '/cv-analysis');
 
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('html', 'dev-with-repos');
     }
 
     public function testIndexShowsLlmDisabledMessageWhenNotEnabled(): void

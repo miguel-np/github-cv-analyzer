@@ -120,7 +120,7 @@ final class GitHubSyncServiceTest extends KernelTestCase
 
         self::assertSame(1, $count);
 
-        $commits = $this->em->getRepository(\App\Entity\Commit::class)->findAll();
+        $commits = $this->em->getRepository(\App\Entity\Commit::class)->findBy(['repository' => $repo]);
         self::assertCount(1, $commits);
         self::assertSame('abc123def456', $commits[0]->getSha());
         self::assertSame('feat: add feature X', $commits[0]->getMessage());
@@ -187,7 +187,7 @@ final class GitHubSyncServiceTest extends KernelTestCase
 
         self::assertSame(0, $count);
 
-        $prs = $this->em->getRepository(\App\Entity\PullRequest::class)->findAll();
+        $prs = $this->em->getRepository(\App\Entity\PullRequest::class)->findBy(['repository' => $repo]);
         self::assertCount(1, $prs);
         self::assertSame(1001, $prs[0]->getGithubId());
     }
