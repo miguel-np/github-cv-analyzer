@@ -25,14 +25,19 @@ class CommitRepository extends ServiceEntityRepository
             return [];
         }
 
-        return $this->createQueryBuilder('c')
-            ->select("TO_CHAR(c.date, 'YYYY-MM') AS month, COUNT(c.id) AS cnt")
-            ->where('c.repository IN (:ids)')
-            ->setParameter('ids', $repoIds)
-            ->groupBy('month')
-            ->orderBy('month', 'ASC')
-            ->getQuery()
-            ->getArrayResult();
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = "
+            SELECT TO_CHAR(c.date, 'YYYY-MM') AS month, COUNT(c.id) AS cnt
+            FROM commits c
+            WHERE c.repository_id IN (:ids)
+            GROUP BY month
+            ORDER BY month ASC
+        ";
+
+        $rows = $conn->executeQuery($sql, ['ids' => $repoIds], ['ids' => \Doctrine\DBAL\ArrayParameterType::INTEGER]);
+
+        return array_map(fn ($r): array => ['month' => $r['month'], 'count' => (int) $r['cnt']], $rows->fetchAllAssociative());
     }
 
     /**

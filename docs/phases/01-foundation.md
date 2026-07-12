@@ -1,6 +1,6 @@
 # Fase 1: Foundation
 
-## Estado: Completada
+> **Estado**: Completada | **Versión**: v0.1.0
 
 ## Objetivo
 

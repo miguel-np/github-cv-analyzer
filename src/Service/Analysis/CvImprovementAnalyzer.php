@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
 final readonly class CvImprovementAnalyzer
 {
     public function __construct(
-        private LlmFactory $llmFactory,
+        private LlmFactoryInterface $llmFactory,
         private GithubAccountRepository $accountRepo,
         private GithubRepoRepository $repoRepo,
         private CommitRepository $commitRepo,

@@ -128,9 +128,11 @@ interface LlmFactoryInterface
 
 ### Providers
 
-- **OllamaProvider**: LLM local, endpoint configurable, modelo configurable (default: `llama3.2`)
-- **OpenAiProvider**: API de OpenAI, modelos GPT-4o/GPT-4o-mini (default: `gpt-4o-mini`)
-- **AnthropicProvider**: API de Anthropic, Claude (default: `claude-3-5-haiku-latest`)
+| Provider | Ubicación | Modelo default | API Key |
+|----------|-----------|---------------|---------|
+| `OllamaProvider` | Local | `llama3.2` | — |
+| `OpenAiProvider` | Nube | `gpt-4o-mini` | `OPENAI_API_KEY` |
+| `AnthropicProvider` | Nube | `claude-3-5-haiku-latest` | `ANTHROPIC_API_KEY` |
 
 ### Prompt templates
 
@@ -150,6 +152,35 @@ Cada tipo de análisis tiene su clase de prompt que construye el mensaje estruct
 6. Respuesta JSON parseada → persistida en AnalysisResult
 7. Cache commit SHA → no se re-analiza
 ```
+
+## Seguridad
+
+### Token de GitHub
+
+- Cifrado con **libsodium** (`sodium_crypto_secretbox`) antes de persistir en BD
+- La clave de cifrado se deriva de `APP_SECRET` vía `sodium_crypto_generichash`
+- Nunca se expone en logs, respuestas API, ni templates
+- Rotación: al cambiar `APP_SECRET`, los tokens deben re-cifrarse
+
+### API Keys de LLM
+
+- Almacenadas en `.env.local` — nunca en `.env` ni en el repo
+- Se pasan a los providers vía constructor, sin exponer en ningún otro punto
+- No se persisten en BD; cada request construye el provider desde la key en env
+
+### Rate limiting
+
+- GitHub API: delays entre requests + caché local de respuestas
+- LLM providers: tracking de tokens y costes por request
+- Messenger: reintentos con backoff exponencial para operaciones fallidas
+
+### Mejores prácticas
+
+- `strict_types` en todos los archivos PHP
+- Sin `var_dump` / `dd()` en producción — usar logger de Symfony
+- `.env.local` y `.env.test` en `.gitignore`
+- Entidades sin lógica de negocio (solo getters/setters)
+- Sin secretos hardcodeados en código fuente
 
 ## Mensajería asíncrona
 

@@ -2,15 +2,35 @@
 
 Instrucciones para agentes de IA que trabajen en este proyecto. Cumplir estrictamente.
 
+---
+
 ## Stack y versiones
 
-- Symfony 7.4 (LTS) + PHP 8.5
-- PostgreSQL 16 — queries Doctrine con soporte jsonb
-- Tailwind CSS v4 (vía symfonycasts/tailwind-bundle)
-- Symfony UX: Turbo, Stimulus
-- AssetMapper para JS/CSS (no Webpack Encore)
-- Symfony Messenger con transporte Doctrine para async
-- Symfony Scheduler para tareas periódicas (auto-sync diario)
+| Componente | Versión / Detalle |
+|---|---|
+| PHP | 8.5 (strict types en todos los archivos) |
+| Symfony | 7.4 LTS |
+| PostgreSQL | 16 — queries Doctrine con soporte jsonb |
+| Tailwind CSS | v4 (vía symfonycasts/tailwind-bundle) |
+| Symfony UX | Turbo, Stimulus |
+| AssetMapper | Para JS/CSS (no Webpack Encore) |
+| Messenger | Symfony Messenger con transporte Doctrine |
+| Scheduler | Symfony Scheduler para tareas periódicas |
+
+### Variables de entorno relevantes
+
+| Variable | Propósito | Default |
+|---|---|---|
+| `DATABASE_URL` | Conexión PostgreSQL | — |
+| `SYNC_INTERVAL` | Frecuencia de auto-sync | `12 hours` |
+| `OLLAMA_BASE_URL` | Endpoint de Ollama | `http://localhost:11434` |
+| `OLLAMA_DEFAULT_MODEL` | Modelo por defecto | `llama3.2` |
+| `OPENAI_API_KEY` | API key de OpenAI | — |
+| `ANTHROPIC_API_KEY` | API key de Anthropic | — |
+| `APP_ENV` | Entorno (`dev`, `test`, `prod`) | `dev` |
+| `APP_SECRET` | Secreto de aplicación | — |
+
+---
 
 ## Reglas de código
 
@@ -46,15 +66,49 @@ src/
 - Twig: templates con PascalCase, componentes en `components/` con snake_case
 - Tailwind: utility-first, evitar CSS custom innecesario
 
+### Git conventions
+
+**Commits**: Conventional Commits v1.0.0 en español.
+
+```
+<type>(<scope>): <description>
+```
+
+| Type | Propósito |
+|---|---|
+| `feat` | Nueva funcionalidad |
+| `fix` | Corrección de bug |
+| `refactor` | Reestructuración de código |
+| `docs` | Documentación |
+| `test` | Tests |
+| `chore` | Dependencias, tooling |
+| `perf` | Mejora de rendimiento |
+| `ci` | Configuración de CI/CD |
+| `style` | Formato solo |
+
+Descripción en minúscula, modo imperativo, sin punto final, máximo 72 caracteres.
+
+**Ramas**: `<type>/<short-description>` (kebab-case).
+
+```
+feature/nombre-funcionalidad
+fix/descripcion-bug
+refactor/componente-objetivo
+```
+
+Nunca commit directo a `main`. Eliminar ramas después del merge.
+
 ### Patrones
 
 - **Token de GitHub**: cifrado con libsodium antes de persistir en BD
 - **LLM multi-provider**: interfaz `LlmClientInterface` con implementaciones por provider
 - **LlmFactory**: `LlmFactoryInterface` crea el provider adecuado según configuración del usuario
-- **Caché de análisis**: cada commit se analiza una vez (SHA único), resultado cacheados
+- **Caché de análisis**: cada commit se analiza una vez (SHA único), resultado cacheado
 - **Rate limiting**: respetar límites de GitHub API (caché + delays)
 - **Async primero**: toda operación costosa (sync, análisis) va por Messenger
 - **Scheduler**: auto-sync diario configurable vía `SYNC_INTERVAL` (default: 12h)
+
+---
 
 ## Comandos disponibles
 
@@ -77,10 +131,54 @@ php bin/console tailwind:build --watch  # Compilar Tailwind en dev
 php bin/console asset-map:compile       # Compilar assets para prod
 
 # Calidad
-php vendor/bin/phpstan analyse          # Análisis estático
+php vendor/bin/phpstan analyse          # Análisis estático (level 8)
 php vendor/bin/php-cs-fixer fix         # Formateo
+php vendor/bin/phpunit                  # Tests
 php bin/console lint:twig templates/    # Lint Twig
 ```
+
+### Quality gates (obligatorios antes de PR)
+
+```bash
+php vendor/bin/php-cs-fixer fix    # Zero violations
+php vendor/bin/phpstan analyse     # Zero errors
+php vendor/bin/phpunit             # 100% pass, >=80% cobertura
+php bin/console lint:twig templates/
+```
+
+---
+
+## Tests
+
+- **Framework**: PHPUnit 13
+- **Factories**: Foundry (zenstruck/foundry) para tests funcionales
+- **BD en tests**: DamaDoctrineTestBundle (transacciones aisladas)
+- **Mocks**: Los tests de integración del motor LLM usan mocks del provider
+
+### Comandos
+
+```bash
+php vendor/bin/phpunit                          # Suite completa
+php vendor/bin/phpunit --testsuite unit         # Solo unitarios
+php vendor/bin/phpunit --testsuite integration  # Solo integración
+php vendor/bin/phpunit --coverage-html var/coverage  # Cobertura HTML
+```
+
+### Estructura de tests
+
+```
+tests/
+├── Unit/           # Clases aisladas, sin BD ni contenedor
+│   ├── Service/
+│   └── Message/
+├── Integration/    # Con contenedor Symfony + BD de test
+│   ├── Controller/
+│   ├── Repository/
+│   └── Service/
+└── Functional/     # End-to-end con navegador
+```
+
+---
 
 ## No hacer
 
@@ -89,9 +187,5 @@ php bin/console lint:twig templates/    # Lint Twig
 - No commits con credenciales o tokens reales
 - No crear nuevos bundles sin discutirlo primero
 - No modificar `composer.json` añadiendo dependencias sin verificar compatibilidad con PHP 8.5 y Symfony 7.4
-
-## Tests
-
-- PHPUnit para unitarios
-- Foundry (zenstruck/foundry) para factories en tests funcionales
-- Los tests de integración del motor LLM usan mocks del provider
+- No `var_dump` / `dd()` en código mergeado — usar el logger de Symfony
+- No hacer push de `.env.local` o archivos con secretos

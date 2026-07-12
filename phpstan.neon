@@ -1,0 +1,30 @@
+parameters:
+    level: 8
+    paths:
+        - src/
+        - tests/
+
+    excludePaths:
+        - src/Kernel.php
+        - src/Entity/
+        - src/Repository/
+
+    tmpDir: var/cache/phpstan
+
+    editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
+
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+
+    ignoreErrors:
+        # Symfony Scheduler cron expression (dynamic string)
+        - '#Dynamic call to static method PHPUnit\\Framework\\Assert::assert.*\(\)#'
+        # Foundry proxies
+        - '#Call to an undefined method object::proxy\(\)#'
+        - '#Call to an undefined method object::repository\(\)#'
+
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-symfony/rules.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-phpunit/rules.neon

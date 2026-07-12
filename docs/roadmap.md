@@ -2,17 +2,25 @@
 
 ## Resumen de fases
 
-| # | Fase | Esfuerzo | Complejidad | Impacto |
-|---|------|:--------:|:-----------:|:-------:|
-| 1 | Foundation | 🟡 3-4h | 🟢 Baja | 🔴 Crítico | &#10003; |
-| 2 | GitHub Integration | 🟡 4-5h | 🟡 Media | 🟠 Alto | &#10003; |
-| 3 | Data Collection | 🔴 8-10h | 🟡 Media | 🔴 Crítico | &#10003; |
-| 4 | LLM Analysis Engine | 🔴 6-8h | 🔴 Alta | 🟣 Muy Alto | &#10003; |
-| 5 | Dashboard & UI | 🔴 8-12h | 🟡 Media | 🟣 Muy Alto | &#10003; |
-| 6 | CV Analysis | 🟡 4-6h | 🔵 Baja | 🟠 Alto | &#10003; |
-| 7 | Scheduler & Automation | 🟢 1-2h | 🟢 Baja | 🟡 Medio | &#10003; |
+| # | Fase | Esfuerzo | Complejidad | Impacto | Versión |
+|---|------|:--------:|:-----------:|:-------:|:-------:|
+| 1 | Foundation | 3-4h | Baja | Crítico | v0.1.0 |
+| 2 | GitHub Integration | 4-5h | Media | Alto | v0.2.0 |
+| 3 | Data Collection | 8-10h | Media | Crítico | v0.3.0 |
+| 4 | LLM Analysis Engine | 6-8h | Alta | Muy Alto | v0.4.0 |
+| 5 | Dashboard & UI | 8-12h | Media | Muy Alto | v0.5.0 |
+| 6 | CV Analysis | 4-6h | Baja | Alto | v0.6.0 |
+| 7 | Scheduler & Automation | 1-2h | Baja | Medio | v0.6.0 |
 
-**Total estimado**: 36-44 horas
+**Total estimado**: 36-44 horas | **Versión actual**: v0.6.0
+
+## Progreso
+
+```
+✓ F1  ✓ F2  ✓ F3  ✓ F4  ✓ F5  ✓ F6  ✓ F7
+───  ───  ───  ───  ───  ═══  ═══
+ Fase completada (✓)  │  En progreso (═══)
+```
 
 ## Dependencias
 
@@ -24,7 +32,7 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 
 ---
 
-## Fase 1: Foundation
+## Fase 1: Foundation ✓
 
 **Objetivo**: Proyecto Symfony 7.4 funcional con stack de desarrollo completo.
 
@@ -41,9 +49,11 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 - [x] Layout base con Tailwind y navegación
 - [x] Página dashboard placeholder
 
+Ver detalle en [docs/phases/01-foundation.md](phases/01-foundation.md).
+
 ---
 
-## Fase 2: GitHub Integration
+## Fase 2: GitHub Integration ✓
 
 **Objetivo**: Conexión con GitHub API y almacenamiento seguro del token.
 
@@ -57,7 +67,7 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 
 ---
 
-## Fase 3: Data Collection
+## Fase 3: Data Collection ✓
 
 **Objetivo**: Sistema asíncrono de recolección de datos de GitHub.
 
@@ -73,7 +83,7 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 
 ---
 
-## Fase 4: LLM Analysis Engine
+## Fase 4: LLM Analysis Engine ✓
 
 **Objetivo**: Motor de análisis de contribuciones usando IA.
 
@@ -94,7 +104,7 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 
 ---
 
-## Fase 5: Dashboard & UI
+## Fase 5: Dashboard & UI ✓ (parcial)
 
 **Objetivo**: Interfaz de usuario completa con estadísticas y visualizaciones.
 
@@ -104,14 +114,14 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 - [x] Tech radar: tecnologías más usadas (Chart.js radar)
 - [x] Distribución por tipo de contribución (Chart.js doughnut)
 - [x] Página de detalle de repositorio con lista de commits analizados
-- [ ] Filtros por tecnología, fecha, tipo de contribución
-- [ ] Turbo Streams para actualizaciones en vivo durante sync
 - [x] Responsive design con Tailwind
 - [x] Modo oscuro
+- [ ] Filtros por tecnología, fecha, tipo de contribución
+- [ ] Turbo Streams para actualizaciones en vivo durante sync
 
 ---
 
-## Fase 6: CV Analysis & Export
+## Fase 6: CV Analysis & Export ✓ (parcial)
 
 **Objetivo**: Análisis final del perfil y generación de informes.
 
@@ -120,12 +130,12 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 - [x] Detección de gaps (áreas débiles, tecnologías ausentes)
 - [x] Recomendaciones de proyectos o tecnologías a aprender
 - [ ] Exportación de informe en PDF/HTML
-- [ ] Comparativa con perfiles de referencia (opcional)
+- [ ] Comparativa con perfiles de referencia
 - [ ] Métricas de mejora a lo largo del tiempo
 
 ---
 
-## Fase 7: Scheduler & Automation
+## Fase 7: Scheduler & Automation ✓
 
 **Objetivo**: Sincronización periódica automática sin intervención del usuario.
 
@@ -136,3 +146,19 @@ F1 ──▶ F2 ──▶ F3 ──▶ F4 ──▶ F5 ──▶ F6
 - [x] `TriggerDailySyncHandler` itera todas las cuentas activas
 - [x] Persistencia en caché para evitar duplicados entre deploys
 - [x] Procesamiento de solo la última ejecución perdida
+
+---
+
+## Próximas iteraciones
+
+### v0.7.0 — Pulido y filtros
+- [ ] Filtros avanzados en dashboard (tecnología, fecha, tipo)
+- [ ] Turbo Streams para updates en vivo
+- [ ] Búsqueda de repositorios y commits
+- [ ] Paginación avanzada en listados
+
+### v0.8.0 — Export y reportes
+- [ ] Exportación de informe en PDF
+- [ ] Comparativa con perfiles de referencia
+- [ ] Métricas de evolución temporal
+- [ ] Sharing de dashboard público

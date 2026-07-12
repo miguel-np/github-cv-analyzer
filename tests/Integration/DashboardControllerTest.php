@@ -41,6 +41,7 @@ final class DashboardControllerTest extends WebTestCase
         $account = GithubAccountFactory::createOne()->_real();
         $repo = GithubRepoFactory::createOne()->_real();
         $account->getGithubRepos()->add($repo);
+        $repo->getContributors()->add($account);
 
         $em = self::getContainer()->get(\Doctrine\ORM\EntityManagerInterface::class);
         \assert($em instanceof \Doctrine\ORM\EntityManagerInterface);
