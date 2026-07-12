@@ -1,10 +1,11 @@
-
 services:
   php:
     build:
       context: .
+      target: runtime
     volumes:
       - .:/app
+      - .env.local:/.env.local:ro
     ports:
       - "8000:8000"
     depends_on:
@@ -31,6 +32,39 @@ services:
     ports:
       - "5433:5432"
 ###< doctrine/doctrine-bundle ###
+
+  worker:
+    build:
+      context: .
+      target: runtime
+    volumes:
+      - .:/app
+      - .env.local:/.env.local:ro
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: "postgresql://app:!ChangeMe!@database:5432/app?serverVersion=16&charset=utf8"
+    command: php bin/console messenger:consume async -vv
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: .
+      target: runtime
+    volumes:
+      - .:/app
+      - .env.local:/.env.local:ro
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: "postgresql://app:!ChangeMe!@database:5432/app?serverVersion=16&charset=utf8"
+    command: >
+      sh -c "while true; do php bin/console scheduler:run --verbose --no-interaction; sleep 60; done"
+    restart: unless-stopped
 
 volumes:
 ###> doctrine/doctrine-bundle ###

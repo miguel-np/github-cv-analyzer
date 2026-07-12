@@ -6,7 +6,14 @@ var/
 .env.*.local
 Dockerfile
 docker-compose*.yml
+compose*.yaml
 docs/
 README.md
 AGENTS.md
 *.md
+.phpunit.cache
+.php-cs-fixer.cache
+phpunit.xml.dist
+tests/
+.github/
+docker/

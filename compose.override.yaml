@@ -1,5 +1,23 @@
-
 services:
+  php:
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: 1
+    volumes:
+      - .:/app
+      - .env.local:/.env.local:ro
+      - .env.dev:/.env.dev:ro
+
 ###> doctrine/doctrine-bundle ###
   database:
 ###< doctrine/doctrine-bundle ###
+
+  worker:
+    volumes:
+      - .:/app
+      - .env.local:/.env.local:ro
+
+  scheduler:
+    volumes:
+      - .:/app
+      - .env.local:/.env.local:ro
