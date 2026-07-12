@@ -43,20 +43,32 @@
 
 <div class="mt-8 rounded-lg bg-white dark:bg-gray-900 shadow p-8 text-center">
     <div class="mx-auto max-w-md">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M11.42 15.17l-4.25-4.25m0 0l4.25-4.25m-4.25 4.25h11.66" />
-        </svg>
-        <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-            Connect your GitHub account
-        </h3>
-        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Head to Settings to link your GitHub account and start analyzing your contributions.
-        </p>
+        {% if account %}
+            <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+                Connected as {{ account.githubUsername }}
+            </h3>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Your repositories are synced. Head to Settings to reconfigure or analyze new data.
+            </p>
+        {% else %}
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M11.42 15.17l-4.25-4.25m0 0l4.25-4.25m-4.25 4.25h11.66" />
+            </svg>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+                Connect your GitHub account
+            </h3>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Head to Settings to link your GitHub account and start analyzing your contributions.
+            </p>
+        {% endif %}
         <div class="mt-6">
-            <a href="#"
+            <a href="{{ path('app_settings') }}"
                 class="inline-flex items-center rounded-md bg-gray-800 dark:bg-white px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 shadow-sm hover:bg-gray-700 dark:hover:bg-gray-100">
-                Go to Settings &rarr;
+                {{ account ? 'Manage Settings' : 'Go to Settings' }} &rarr;
             </a>
         </div>
     </div>
