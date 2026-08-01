@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace App\Service\Health;
 
 use App\Service\GitHub\GitHubClientInterface;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Messenger\Transport\TransportInterface;
+use Throwable;
 
 final readonly class HealthChecker
 {
     public function __construct(
         private EntityManagerInterface $em,
         private ?GitHubClientInterface $githubClient,
-        private ?TransportInterface $messengerTransport,
     ) {
     }
 
@@ -25,12 +26,12 @@ final readonly class HealthChecker
         return [
             'status' => 'ok',
             'version' => 'v0.6.0',
-            'timestamp' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
+            'timestamp' => (new DateTimeImmutable())->format(DateTimeInterface::ATOM),
         ];
     }
 
     /**
-     * @return array{status: string, checks: array<string, array{status: string, latency_ms?: int, error?: string}>}
+     * @return array{status: string, checks: array<string, array{status: string, latency_ms?: int, error?: string, pending_messages?: int}>}
      */
     public function detailed(): array
     {
@@ -59,7 +60,7 @@ final readonly class HealthChecker
     }
 
     /**
-     * @return array{status: string, latency_ms: int}
+     * @return array{status: string, latency_ms: int, error?: string}
      */
     private function checkDatabase(): array
     {
@@ -71,7 +72,7 @@ final readonly class HealthChecker
             $latency = (int) ((microtime(true) - $start) * 1000);
 
             return ['status' => 'ok', 'latency_ms' => $latency];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $latency = (int) ((microtime(true) - $start) * 1000);
 
             return ['status' => 'error', 'latency_ms' => $latency, 'error' => $e->getMessage()];
@@ -83,15 +84,15 @@ final readonly class HealthChecker
      */
     private function checkMessenger(): array
     {
-        if ($this->messengerTransport === null) {
-            return ['status' => 'ok', 'message' => 'transport not available'];
-        }
-
         try {
-            $pending = $this->messengerTransport->get();
+            $conn = $this->em->getConnection();
 
-            return ['status' => 'ok', 'pending_messages' => count($pending)];
-        } catch (\Throwable $e) {
+            $pending = (int) $conn->executeQuery(
+                "SELECT COUNT(*) FROM messenger_messages WHERE delivered_at IS NULL AND queue_name = 'async'",
+            )->fetchOne();
+
+            return ['status' => 'ok', 'pending_messages' => $pending];
+        } catch (Throwable $e) {
             return ['status' => 'error', 'error' => $e->getMessage()];
         }
     }
@@ -105,7 +106,7 @@ final readonly class HealthChecker
             $this->githubClient?->getCurrentUsername();
 
             return ['status' => 'ok'];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return ['status' => 'error', 'error' => $e->getMessage()];
         }
     }
