@@ -14,7 +14,7 @@ Aplicación Symfony 7.4 que indexa tus repositorios, analiza cada commit con LLM
 ## Características
 
 - **Sincronización asíncrona** de repositorios, commits, PRs e issues con rate limiting
-- **Motor de análisis multi-LLM** — Ollama (local), OpenAI (GPT-4o), Anthropic (Claude)
+- **Motor de análisis multi-LLM** — Ollama (local), OpenAI (GPT-4o-mini), Anthropic (Claude)
 - **Clasificación inteligente** de commits por tipo, complejidad y tecnologías
 - **Dashboard interactivo** con Chart.js: timeline, tech radar, distribución de contribuciones
 - **Análisis de CV** con detección de gaps, recomendaciones de mejora y sugerencias de tecnologías
@@ -99,14 +99,8 @@ DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/github_cv?serverVersion=16&c
 # Scheduler
 SYNC_INTERVAL="12 hours"   # Frecuencia de auto-sync (default: 12h)
 
-# GitHub (opcional, se configura vía UI)
-GITHUB_DEFAULT_TOKEN=""    # Token por defecto para nuevos usuarios
-
-# LLM Providers (opcional, se configuran vía UI)
-OLLAMA_BASE_URL="http://localhost:11434"
-OLLAMA_DEFAULT_MODEL="llama3.2"
-OPENAI_API_KEY=""
-ANTHROPIC_API_KEY=""
+# GitHub webhooks (opcional)
+GITHUB_WEBHOOK_SECRET=""   # Secreto para verificar webhooks de GitHub
 
 # Entorno
 APP_ENV=dev

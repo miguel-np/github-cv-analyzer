@@ -8,7 +8,7 @@ Instrucciones para agentes de IA que trabajen en este proyecto. Cumplir estricta
 
 | Componente | Versión / Detalle |
 |---|---|
-| PHP | 8.5 (strict types en todos los archivos) |
+| PHP | 8.4+ (strict types en todos los archivos) |
 | Symfony | 7.4 LTS |
 | PostgreSQL | 16 — queries Doctrine con soporte jsonb |
 | Tailwind CSS | v4 (vía symfonycasts/tailwind-bundle) |
@@ -23,12 +23,11 @@ Instrucciones para agentes de IA que trabajen en este proyecto. Cumplir estricta
 |---|---|---|
 | `DATABASE_URL` | Conexión PostgreSQL | — |
 | `SYNC_INTERVAL` | Frecuencia de auto-sync | `12 hours` |
-| `OLLAMA_BASE_URL` | Endpoint de Ollama | `http://localhost:11434` |
-| `OLLAMA_DEFAULT_MODEL` | Modelo por defecto | `llama3.2` |
-| `OPENAI_API_KEY` | API key de OpenAI | — |
-| `ANTHROPIC_API_KEY` | API key de Anthropic | — |
+| `GITHUB_WEBHOOK_SECRET` | Secreto para webhooks de GitHub | — |
 | `APP_ENV` | Entorno (`dev`, `test`, `prod`) | `dev` |
 | `APP_SECRET` | Secreto de aplicación | — |
+
+> **Nota**: Las claves de proveedores LLM (OpenAI, Anthropic, Ollama) no son variables de entorno. Se configuran por usuario vía la UI y se almacenan en el campo `settings` (jsonb) de la entidad `User`.
 
 ---
 
@@ -42,15 +41,14 @@ src/
 ├── Entity/             # Entidades Doctrine, sin lógica más allá de getters/setters
 ├── Repository/         # Queries Doctrine, métodos findBy* personalizados
 ├── Service/            # Toda la lógica de negocio
-│   ├── GitHub/         # Cliente GitHub y servicios de sincronización
-│   └── Analysis/       # Motor de análisis con LLMs
-│       ├── Provider/   # OllamaProvider, OpenAiProvider, AnthropicProvider
-│       ├── Prompt/     # Templates de prompts
-│       └── Shared/     # Helpers (JsonHelper, TechnologyHelper)
+│   ├── GitHub/          # Cliente GitHub y servicios de sincronización
+│   ├── Analysis/        # Motor de análisis con LLMs
+│   │   ├── Provider/    # OllamaProvider, OpenAiProvider, AnthropicProvider
+│   │   ├── Prompt/      # Templates de prompts
+│   │   └── Shared/      # Helpers (JsonHelper, TechnologyHelper)
+│   └── Health/          # Health check
 ├── Message/            # Clases DTO de Messenger (final, readonly)
 ├── MessageHandler/     # Handlers asíncronos
-├── Twig/Components/    # Componentes Twig reutilizables
-├── Stimulus/           # Controladores Stimulus
 ├── Schedule.php        # Tarea periódica (Scheduler) — auto-sync diario
 └── Kernel.php
 ```
@@ -63,8 +61,9 @@ src/
 - Servicios inyectados por constructor con `readonly`
 - Sin mutación de entidades en controladores — usar servicios para lógica de escritura
 - Mensajes Messenger: `final readonly class` con propiedades públicas
-- Twig: templates con PascalCase, componentes en `components/` con snake_case
+- Twig: templates con PascalCase
 - Tailwind: utility-first, evitar CSS custom innecesario
+- Controladores Stimulus en `assets/controllers/` (AssetMapper)
 
 ### Git conventions
 
@@ -93,7 +92,12 @@ Descripción en minúscula, modo imperativo, sin punto final, máximo 72 caracte
 ```
 feature/nombre-funcionalidad
 fix/descripcion-bug
+hotfix/bug-urgente
 refactor/componente-objetivo
+test/descripcion-tests
+chore/mejora-tooling
+docs/cambio-docs
+security/mejora-seguridad
 ```
 
 Nunca commit directo a `main`. Eliminar ramas después del merge.
@@ -168,14 +172,8 @@ php vendor/bin/phpunit --coverage-html var/coverage  # Cobertura HTML
 
 ```
 tests/
-├── Unit/           # Clases aisladas, sin BD ni contenedor
-│   ├── Service/
-│   └── Message/
-├── Integration/    # Con contenedor Symfony + BD de test
-│   ├── Controller/
-│   ├── Repository/
-│   └── Service/
-└── Functional/     # End-to-end con navegador
+├── Unit/           # Clases aisladas, sin BD ni contenedor (archivos planos)
+└── Integration/    # Con contenedor Symfony + BD de test (archivos planos)
 ```
 
 ---
@@ -186,6 +184,6 @@ tests/
 - No exponer secretos en entities ni usar `json_encode` en entities — usar tipos Doctrine json
 - No commits con credenciales o tokens reales
 - No crear nuevos bundles sin discutirlo primero
-- No modificar `composer.json` añadiendo dependencias sin verificar compatibilidad con PHP 8.5 y Symfony 7.4
+- No modificar `composer.json` añadiendo dependencias sin verificar compatibilidad con PHP 8.4+ y Symfony 7.4
 - No `var_dump` / `dd()` en código mergeado — usar el logger de Symfony
 - No hacer push de `.env.local` o archivos con secretos

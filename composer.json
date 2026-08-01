@@ -2,7 +2,7 @@
     "name": "app/github-cv-analyzer",
     "description": "GitHub CV Analyzer — analiza contribuciones de GitHub usando LLMs",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
