@@ -4,7 +4,7 @@
 [![Symfony](https://img.shields.io/badge/Symfony-7.4%20LTS-black?logo=symfony)](https://symfony.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)](https://postgresql.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?logo=tailwindcss)](https://tailwindcss.com)
-[![License](https://img.shields.io/badge/license-Proprietary-red)](./LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green?logo=opensourceinitiative)](./LICENSE)
 [![Version](https://img.shields.io/badge/version-0.6.0-blue)](./CHANGELOG.md)
 
 Analiza tus contribuciones en GitHub con IA para mejorar tu CV profesional.
@@ -150,4 +150,4 @@ php bin/console lint:twig templates/             # Lint templates
 
 ## Licencia
 
-Propietario. Todos los derechos reservados.
+MIT License. Consulta el archivo [LICENSE](LICENSE) para más detalles.
