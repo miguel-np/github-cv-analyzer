@@ -1,4 +1,6 @@
 {
+    "name": "app/github-cv-analyzer",
+    "description": "GitHub CV Analyzer — analiza contribuciones de GitHub usando LLMs",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
@@ -7,8 +9,8 @@
         "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "doctrine/doctrine-bundle": "*",
-        "doctrine/doctrine-migrations-bundle": "*",
+        "doctrine/doctrine-bundle": "^3.3",
+        "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6",
         "knplabs/github-api": "^3.16",
         "nyholm/psr7": "^1.8",
@@ -24,12 +26,12 @@
         "symfony/scheduler": "7.4.*",
         "symfony/security-csrf": "7.4.*",
         "symfony/serializer": "7.4.*",
-        "symfony/stimulus-bundle": ">=3.2",
+        "symfony/stimulus-bundle": "^3.4",
         "symfony/twig-bundle": "7.4.*",
-        "symfony/ux-turbo": "*",
+        "symfony/ux-turbo": "^3.4",
         "symfony/validator": "7.4.*",
         "symfony/yaml": "7.4.*",
-        "symfonycasts/tailwind-bundle": "*"
+        "symfonycasts/tailwind-bundle": "^1.0"
     },
     "config": {
         "allow-plugins": {
