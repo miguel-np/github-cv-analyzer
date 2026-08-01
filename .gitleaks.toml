@@ -1,0 +1,10 @@
+[allowlist]
+description = "Falsos positivos: documentación y fixtures de test"
+
+[[allowlist.paths]]
+pattern = '''^tests/Unit/TokenEncryptionServiceTest\.php$'''
+
+[[allowlist.regexes]]
+pattern = '''OPENAI_API_KEY\s*=\s*""'''
+[[allowlist.regexes]]
+pattern = '''ANTHROPIC_API_KEY\s*=\s*""'''
