@@ -8,6 +8,22 @@ framework:
     #esi: true
     #fragments: true
 
+when@dev:
+    framework:
+        session:
+            cookie_secure: false
+            cookie_httponly: true
+            cookie_samesite: lax
+
+when@prod:
+    framework:
+        session:
+            cookie_secure: true
+            cookie_httponly: true
+            cookie_samesite: lax
+            cookie_lifetime: 86400
+            gc_maxlifetime: 86400
+
 when@test:
     framework:
         test: true

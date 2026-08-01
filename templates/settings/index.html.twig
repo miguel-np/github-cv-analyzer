@@ -92,7 +92,7 @@
                     </div>
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-500 dark:text-gray-400">Connected repositories</dt>
-                        <dd class="text-sm font-medium text-gray-900 dark:text-white">{{ account.githubRepos|length }}</dd>
+                        <dd class="text-sm font-medium text-gray-900 dark:text-white">{{ repoCount }}</dd>
                     </div>
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-500 dark:text-gray-400">Last sync</dt>
@@ -129,7 +129,7 @@
             <label class="inline-flex items-center">
                 <input type="checkbox" name="llm_enabled" value="1"
                     class="rounded border-gray-300 dark:border-gray-600"
-                    {{ account and account.user.settings.llm_enabled ? 'checked' : '' }}>
+                    {{ account and user.settings.llm_enabled ? 'checked' : '' }}>
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable AI analysis</span>
             </label>
         </div>
@@ -139,16 +139,16 @@
                 <label for="llm_provider" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Provider</label>
                 <select name="llm_provider" id="llm_provider"
                     class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white">
-                    <option value="ollama" {{ (account and account.user.settings.llm_provider|default('ollama') == 'ollama') ? 'selected' : '' }}>Ollama (local, free)</option>
-                    <option value="openai" {{ (account and account.user.settings.llm_provider == 'openai') ? 'selected' : '' }}>OpenAI (GPT-4o)</option>
-                    <option value="anthropic" {{ (account and account.user.settings.llm_provider == 'anthropic') ? 'selected' : '' }}>Anthropic (Claude)</option>
+                    <option value="ollama" {{ (account and user.settings.llm_provider|default('ollama') == 'ollama') ? 'selected' : '' }}>Ollama (local, free)</option>
+                    <option value="openai" {{ (account and user.settings.llm_provider == 'openai') ? 'selected' : '' }}>OpenAI (GPT-4o)</option>
+                    <option value="anthropic" {{ (account and user.settings.llm_provider == 'anthropic') ? 'selected' : '' }}>Anthropic (Claude)</option>
                 </select>
             </div>
 
             <div>
                 <label for="llm_model" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
                 <input type="text" name="llm_model" id="llm_model"
-                    value="{{ account ? account.user.settings.llm_model|default('') : '' }}"
+                    value="{{ account ? user.settings.llm_model|default('') : '' }}"
                     placeholder="llama3.2 / gpt-4o-mini"
                     class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white">
             </div>
@@ -156,7 +156,7 @@
             <div id="ollama-host-group">
                 <label for="ollama_host" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ollama Host</label>
                 <input type="text" name="ollama_host" id="ollama_host"
-                    value="{{ account ? account.user.settings.ollama_host|default('http://localhost:11434') : 'http://localhost:11434' }}"
+                    value="{{ account ? user.settings.ollama_host|default('http://localhost:11434') : 'http://localhost:11434' }}"
                     class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white">
             </div>
         </div>

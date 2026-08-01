@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsodium-dev \
     libicu-dev \
     libzip-dev \
+    curl \
     unzip \
     git \
     && docker-php-ext-install -j$(nproc) \
@@ -42,7 +43,7 @@ COPY --from=builder --chown=appuser:appuser /app /app
 USER appuser
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-    CMD php -r "echo 'ok';" || exit 1
+    CMD curl -f http://localhost:8000/health || exit 1
 
 EXPOSE 8000
 

@@ -1,0 +1,43 @@
+senior_backend:
+  title: "Senior Backend Developer"
+  description: "Experienced backend developer with strong architecture skills"
+  expected:
+    languages: [PHP, Python, Go, Java, TypeScript]
+    frameworks: [Symfony, Laravel, Django, Spring]
+    patterns: [TDD, DDD, CQRS, Event Sourcing, Microservices]
+    infrastructure: [Docker, Kubernetes, CI/CD, AWS/GCP/Azure]
+    databases: [PostgreSQL, MySQL, Redis, MongoDB]
+    practices: [Code Review, Mentoring, Architecture Design, Technical Documentation]
+
+mid_backend:
+  title: "Mid-Level Backend Developer"
+  description: "Solid backend developer with good fundamentals"
+  expected:
+    languages: [PHP, Python, JavaScript]
+    frameworks: [Symfony, Laravel, Express]
+    patterns: [MVC, Repository Pattern, Dependency Injection]
+    infrastructure: [Docker, Git, CI/CD basics]
+    databases: [PostgreSQL, MySQL, Redis basics]
+    practices: [Unit Testing, API Design, Code Review participation]
+
+fullstack:
+  title: "Full Stack Developer"
+  description: "Versatile developer comfortable across the stack"
+  expected:
+    languages: [PHP, JavaScript, TypeScript, Python]
+    frameworks: [Symfony, React, Vue, Tailwind]
+    patterns: [MVC, REST, Component-based Architecture]
+    infrastructure: [Docker, AWS basics, Vercel/Netlify]
+    databases: [PostgreSQL, MySQL]
+    practices: [E2E Testing, Responsive Design, Accessibility, API Integration]
+
+devops:
+  title: "DevOps Engineer"
+  description: "Infrastructure and automation specialist"
+  expected:
+    languages: [Python, Go, Bash, HCL]
+    frameworks: [Terraform, Ansible, Pulumi]
+    patterns: [IaC, GitOps, Immutable Infrastructure]
+    infrastructure: [Kubernetes, Docker, AWS/GCP, CI/CD pipelines, Monitoring]
+    databases: [PostgreSQL, Redis, Elasticsearch]
+    practices: [Incident Response, SLO/SLI, Capacity Planning, Security Hardening]

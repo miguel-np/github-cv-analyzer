@@ -43,7 +43,7 @@
         "sort-packages": true,
         "policy": {
             "advisories": {
-                "block": false
+                "block": true
             }
         }
     },

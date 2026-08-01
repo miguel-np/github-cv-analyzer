@@ -160,5 +160,88 @@
             </div>
         </div>
     {% endif %}
+
+    {% if llmEnabled and stats.repositories > 0 %}
+    <div class="mt-8 rounded-lg bg-white dark:bg-gray-900 shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Compare Profile</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            See how your profile matches against reference roles or a specific job.
+        </p>
+
+        <div class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div>
+                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reference Profiles</h3>
+                <div class="flex flex-wrap gap-2" id="reference-profiles">
+                    {% for key, title in referenceProfiles %}
+                        <button type="button"
+                            class="compare-profile-btn px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            data-profile="{{ key }}">
+                            {{ title }}
+                        </button>
+                    {% endfor %}
+                </div>
+                <div id="comparison-result" class="mt-4"></div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Description</h3>
+                <form method="post" action="{{ path('app_cv_analysis_compare_job') }}" class="space-y-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('compare_job') }}">
+                    <textarea name="job_description" rows="5"
+                        class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white"
+                        placeholder="Paste a job description here to compare against your profile..."></textarea>
+                    <button type="submit"
+                        class="inline-flex items-center rounded-md bg-gray-800 dark:bg-white px-4 py-2 text-sm font-semibold text-white dark:text-gray-900 shadow-sm hover:bg-gray-700 dark:hover:bg-gray-100">
+                        Analyze Match
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if stats.repositories > 0 and llmEnabled %}
+    <script>
+        document.querySelectorAll('.compare-profile-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const profile = btn.dataset.profile;
+                const resultDiv = document.getElementById('comparison-result');
+                resultDiv.innerHTML = '<p class=\'text-sm text-gray-500\'>Analyzing...</p>';
+
+                try {
+                    const resp = await fetch('/cv-analysis/compare/' + profile);
+                    const data = await resp.json();
+                    if (!data) {
+                        resultDiv.innerHTML = '<p class=\'text-sm text-red-500\'>Analysis failed. Check your LLM configuration.</p>';
+                        return;
+                    }
+                    let html = '<div class=\'rounded-lg border border-gray-200 dark:border-gray-700 p-4\'>';
+                    html += '<div class=\'flex items-center justify-between mb-2\'><span class=\'text-sm font-medium\'>Match Score</span><span class=\'text-xl font-bold text-blue-600\'>' + data.overall_match_percentage + '%</span></div>';
+                    html += '<div class=\'w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-3\'><div class=\'bg-blue-600 h-2 rounded-full\' style=\'width:' + data.overall_match_percentage + '%\'></div></div>';
+                    html += '<p class=\'text-sm text-gray-700 dark:text-gray-300\'>' + data.summary + '</p>';
+
+                    if (data.missing_skills && data.missing_skills.length > 0) {
+                        html += '<p class=\'text-xs font-semibold text-red-500 mt-3 mb-1\'>KEY GAPS:</p>';
+                        data.missing_skills.slice(0, 3).forEach(s => {
+                            html += '<p class=\'text-xs text-gray-600 dark:text-gray-400\'>- <strong>' + s.skill + '</strong>: ' + s.learning_suggestion + '</p>';
+                        });
+                    }
+
+                    if (data.recommendations && data.recommendations.length > 0) {
+                        html += '<p class=\'text-xs font-semibold text-blue-500 mt-2 mb-1\'>NEXT STEPS:</p>';
+                        data.recommendations.slice(0, 2).forEach(r => {
+                            html += '<p class=\'text-xs text-gray-600 dark:text-gray-400\'>' + r.action + ' (' + r.timeline + ')</p>';
+                        });
+                    }
+
+                    html += '</div>';
+                    resultDiv.innerHTML = html;
+                } catch (e) {
+                    resultDiv.innerHTML = '<p class=\'text-sm text-red-500\'>Error loading comparison.</p>';
+                }
+            });
+        });
+    </script>
+    {% endif %}
 {% endif %}
 {% endblock %}

@@ -1,0 +1,83 @@
+<div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Job Match Result</h2>
+
+    <div class="mb-6">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Match Score</span>
+            <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ matchResult.overall_match_percentage }}%</span>
+        </div>
+        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+            <div class="bg-blue-600 h-3 rounded-full" style="width: {{ matchResult.overall_match_percentage }}%"></div>
+        </div>
+    </div>
+
+    <p class="text-sm text-gray-700 dark:text-gray-300 mb-6">{{ matchResult.summary }}</p>
+
+    {% if matchResult.matching_skills|length > 0 %}
+    <div class="mb-6">
+        <h3 class="text-sm font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider mb-3">Matching Skills</h3>
+        <div class="space-y-2">
+            {% for skill in matchResult.matching_skills %}
+                <div class="flex items-start text-sm">
+                    <span class="text-green-500 mr-2">&#x2713;</span>
+                    <div>
+                        <span class="font-medium text-gray-900 dark:text-white">{{ skill.skill }}</span>
+                        <span class="text-gray-500 dark:text-gray-400 ml-2">&mdash; {{ skill.evidence }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if matchResult.missing_skills|length > 0 %}
+    <div class="mb-6">
+        <h3 class="text-sm font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider mb-3">Skills to Develop</h3>
+        <div class="space-y-3">
+            {% for skill in matchResult.missing_skills %}
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ skill.skill }}</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium
+                            {% if skill.priority == 'critical' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300
+                            {% elseif skill.priority == 'high' %}bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300
+                            {% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300{% endif %}">
+                            {{ skill.priority }}
+                        </span>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ skill.learning_suggestion }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if matchResult.recommendations|length > 0 %}
+    <div>
+        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Action Plan</h3>
+        <div class="space-y-2">
+            {% for rec in matchResult.recommendations %}
+                <div class="flex items-start">
+                    <span class="flex-shrink-0 mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold
+                        {% if rec.timeline == 'short-term' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300
+                        {% elseif rec.timeline == 'medium-term' %}bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300
+                        {% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300{% endif %}">
+                        {{ loop.index }}
+                    </span>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">{{ rec.action }}</p>
+                        <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{{ rec.impact }} &mdash; {{ rec.timeline }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if jobDescription is defined and jobDescription %}
+    <details class="mt-6">
+        <summary class="text-xs text-gray-400 dark:text-gray-500 cursor-pointer">Job description analyzed</summary>
+        <pre class="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{{ jobDescription }}</pre>
+    </details>
+    {% endif %}
+</div>

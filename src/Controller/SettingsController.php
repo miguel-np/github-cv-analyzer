@@ -8,6 +8,7 @@ use App\Entity\GithubAccount;
 use App\Entity\User;
 use App\Message\SyncAccountMessage;
 use App\Repository\GithubAccountRepository;
+use App\Repository\GithubRepoRepository;
 use App\Repository\SyncJobRepository;
 use App\Repository\UserRepository;
 use App\Service\GitHub\GitHubClientInterface;
@@ -33,6 +34,7 @@ class SettingsController extends AbstractController
         TokenEncryptionService $tokenEncryption,
         GitHubClientInterface $gitHubClient,
         GithubAccountRepository $accountRepo,
+        GithubRepoRepository $repoRepo,
         UserRepository $userRepo,
         SyncJobRepository $jobRepo,
         MessageBusInterface $bus,
@@ -91,6 +93,8 @@ class SettingsController extends AbstractController
 
         return $this->render('settings/index.html.twig', [
             'account' => $account,
+            'user' => $user,
+            'repoCount' => $account ? $repoRepo->countByAccount($account) : 0,
             'verification' => $verificationResult,
             'syncJobs' => $jobs,
         ]);

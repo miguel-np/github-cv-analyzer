@@ -17,6 +17,17 @@ class GithubRepoRepository extends ServiceEntityRepository
         parent::__construct($registry, GithubRepo::class);
     }
 
+    public function countByAccount(GithubAccount $account): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->join('r.contributors', 'c')
+            ->where('c.id = :accountId')
+            ->setParameter('accountId', $account->getId())
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /**
      * @return int[]
      */
@@ -31,6 +42,20 @@ class GithubRepoRepository extends ServiceEntityRepository
             ->getSingleColumnResult();
 
         return array_map('intval', $ids);
+    }
+
+    /**
+     * @return GithubRepo[]
+     */
+    public function findByAccount(GithubAccount $account): array
+    {
+        return $this->createQueryBuilder('r')
+            ->join('r.contributors', 'c')
+            ->where('c.id = :accountId')
+            ->setParameter('accountId', $account->getId())
+            ->orderBy('r.stars', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**

@@ -6,8 +6,12 @@ namespace App\Tests\Integration;
 
 use App\Entity\GithubAccount;
 use App\Entity\GithubRepo;
+use App\Service\GitHub\CommitSyncService;
 use App\Service\GitHub\GitHubClientInterface;
 use App\Service\GitHub\GitHubSyncService;
+use App\Service\GitHub\IssueSyncService;
+use App\Service\GitHub\PullRequestSyncService;
+use App\Service\GitHub\RepoSyncService;
 use App\Tests\Factory\GithubAccountFactory;
 use App\Tests\Factory\GithubRepoFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,10 +38,13 @@ final class GitHubSyncServiceTest extends KernelTestCase
         $this->em = $em;
         $this->gitHubClient = $this->createMock(GitHubClientInterface::class);
 
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+
         $this->syncService = new GitHubSyncService(
-            $this->gitHubClient,
-            $this->em,
-            $this->createMock(\Psr\Log\LoggerInterface::class),
+            new RepoSyncService($this->gitHubClient, $this->em, $logger),
+            new CommitSyncService($this->gitHubClient, $this->em, $logger),
+            new PullRequestSyncService($this->gitHubClient, $this->em, $logger),
+            new IssueSyncService($this->gitHubClient, $this->em, $logger),
         );
     }
 
@@ -98,7 +105,7 @@ final class GitHubSyncServiceTest extends KernelTestCase
         self::assertCount(0, $repos);
     }
 
-    public function testSyncCommitsCreatesCommitsWithDiffStats(): void
+    public function testSyncCommitsCreatesCommitsFromListEndpointData(): void
     {
         $account = $this->createAccount();
         $repo = $this->persistRepo('octocat/hello-world');
@@ -111,12 +118,6 @@ final class GitHubSyncServiceTest extends KernelTestCase
                 ]],
             ]));
 
-        $this->gitHubClient->method('getCommitDetail')
-            ->willReturn([
-                'stats' => ['additions' => 42, 'deletions' => 7],
-                'files' => [['filename' => 'src/Main.php']],
-            ]);
-
         $count = $this->syncService->syncCommits($repo, $account);
 
         self::assertSame(1, $count);
@@ -125,7 +126,27 @@ final class GitHubSyncServiceTest extends KernelTestCase
         self::assertCount(1, $commits);
         self::assertSame('abc123def456', $commits[0]->getSha());
         self::assertSame('feat: add feature X', $commits[0]->getMessage());
-        self::assertSame(42, $commits[0]->getAdditions());
+        self::assertFalse($commits[0]->getIsMergeCommit());
+    }
+
+    public function testSyncCommitsDetectsMergeCommits(): void
+    {
+        $account = $this->createAccount();
+        $repo = $this->persistRepo('octocat/merge-test');
+
+        $this->gitHubClient->method('listCommits')
+            ->willReturn($this->createGenerator([
+                ['sha' => 'merge-abc123', 'parents' => [['sha' => 'p1'], ['sha' => 'p2']], 'commit' => [
+                    'message' => 'Merge pull request #42',
+                    'author' => ['email' => 'bot@test.com', 'name' => 'GitHub', 'date' => '2026-07-10T12:00:00Z'],
+                ]],
+            ]));
+
+        $this->syncService->syncCommits($repo, $account);
+
+        $commits = $this->em->getRepository(\App\Entity\Commit::class)->findBy(['repository' => $repo]);
+        self::assertCount(1, $commits);
+        self::assertTrue($commits[0]->getIsMergeCommit());
     }
 
     public function testSyncCommitsSkipsAlreadySyncedCommitsOnSecondRun(): void
@@ -142,12 +163,6 @@ final class GitHubSyncServiceTest extends KernelTestCase
             ->willReturnCallback(function () use ($commitData): Generator {
                 yield $commitData;
             });
-
-        $this->gitHubClient->method('getCommitDetail')
-            ->willReturn([
-                'stats' => ['additions' => 1, 'deletions' => 0],
-                'files' => [['filename' => 'f.txt']],
-            ]);
 
         $firstCount = $this->syncService->syncCommits($repo, $account);
         self::assertSame(1, $firstCount);

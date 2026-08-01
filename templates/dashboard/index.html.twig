@@ -117,11 +117,70 @@
     </div>
 </div>
 
-{% if account.githubRepos|length > 0 %}
+{% if trendData.quality_trend|length > 0 %}
+<div class="mt-8">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Evolution</h2>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6">
+            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Code Quality Trend</h3>
+            <div class="mt-4 h-64" {{ stimulus_controller('dashboard-chart', {
+                type: 'line',
+                data: {
+                    labels: trendData.quality_trend|map(t => t.month),
+                    datasets: [{
+                        label: 'Quality Score',
+                        data: trendData.quality_trend|map(t => t.avg_quality),
+                        borderColor: '#22c55e',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                    }]
+                }|json_encode,
+                options: {
+                    scales: { y: { min: 0, max: 10 } }
+                }|json_encode,
+            }) }}>
+                <canvas></canvas>
+            </div>
+        </div>
+
+        <div class="rounded-lg bg-white dark:bg-gray-900 shadow p-6">
+            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Bug vs Feature Ratio</h3>
+            <div class="mt-4 h-64" {{ stimulus_controller('dashboard-chart', {
+                type: 'bar',
+                data: {
+                    labels: trendData.quality_trend|map(t => t.month),
+                    datasets: [
+                        {
+                            label: 'Features',
+                            data: trendData.quality_trend|map(t => t.feature_count),
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Bugfixes',
+                            data: trendData.quality_trend|map(t => t.bug_count),
+                            backgroundColor: '#ef4444',
+                            borderRadius: 4,
+                        }
+                    ]
+                }|json_encode,
+                options: {
+                    scales: { x: { stacked: true }, y: { stacked: true } }
+                }|json_encode,
+            }) }}>
+                <canvas></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if repos|length > 0 %}
 <div class="mt-8">
     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Repositories</h2>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {% for repo in account.githubRepos %}
+        {% for repo in repos %}
             <a href="{{ path('app_repo_detail', {id: repo.id}) }}"
                class="block rounded-lg bg-white dark:bg-gray-900 shadow p-4 hover:shadow-md transition-shadow">
                 <div class="flex items-center justify-between">

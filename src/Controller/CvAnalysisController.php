@@ -9,7 +9,9 @@ use App\Repository\GithubAccountRepository;
 use App\Repository\GithubRepoRepository;
 use App\Repository\UserRepository;
 use App\Service\Analysis\CvImprovementAnalyzer;
+use App\Service\Analysis\JobMatchAnalyzer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -19,6 +21,7 @@ use Throwable;
 class CvAnalysisController extends AbstractController
 {
     private const SESSION_KEY = 'cv_analysis_result';
+    private const SESSION_MATCH_KEY = 'cv_match_result';
     private const SESSION_TTL = 86400;
 
     #[Route('/cv-analysis', name: 'app_cv_analysis')]
@@ -28,6 +31,7 @@ class CvAnalysisController extends AbstractController
         CommitRepository $commitRepo,
         UserRepository $userRepo,
         CvImprovementAnalyzer $analyzer,
+        JobMatchAnalyzer $jobMatchAnalyzer,
         Request $request,
     ): Response {
         $user = $userRepo->findOneBy([]);
@@ -63,11 +67,109 @@ class CvAnalysisController extends AbstractController
             }
         }
 
+        $referenceProfiles = $jobMatchAnalyzer->getAvailableProfiles();
+
         return $this->render('cv_analysis/index.html.twig', [
             'account' => $account,
             'stats' => $stats,
             'analysis' => $analysis,
             'llmEnabled' => $llmEnabled,
+            'referenceProfiles' => $referenceProfiles,
+        ]);
+    }
+
+    #[Route('/cv-analysis/compare/{profile}', name: 'app_cv_analysis_compare')]
+    public function compare(
+        string $profile,
+        UserRepository $userRepo,
+        JobMatchAnalyzer $jobMatchAnalyzer,
+        Request $request,
+    ): Response {
+        $user = $userRepo->findOneBy([]);
+        if (!$user) {
+            return $this->redirectToRoute('app_dashboard');
+        }
+
+        $session = $request->getSession();
+        $cached = $session->get(self::SESSION_MATCH_KEY);
+
+        if (is_array($cached) && isset($cached[$profile]) && ($cached[$profile]['_ts'] ?? 0) + self::SESSION_TTL > time()) {
+            $result = $cached[$profile];
+            unset($result['_ts']);
+        } else {
+            try {
+                $result = $jobMatchAnalyzer->compareWithReference($user, $profile);
+                if ($result !== null) {
+                    $cached = is_array($cached) ? $cached : [];
+                    $result['_ts'] = time();
+                    $cached[$profile] = $result;
+                    $session->set(self::SESSION_MATCH_KEY, $cached);
+                    unset($result['_ts']);
+                }
+            } catch (Throwable) {
+                $this->addFlash('error', 'Failed to compare profiles. Check your LLM configuration.');
+
+                return $this->redirectToRoute('app_cv_analysis');
+            }
+
+            if ($result === null) {
+                return new JsonResponse(['error' => 'No data available for comparison'], Response::HTTP_NOT_FOUND);
+            }
+        }
+
+        return new JsonResponse($result);
+    }
+
+    #[Route('/cv-analysis/compare-job', name: 'app_cv_analysis_compare_job', methods: ['POST'])]
+    public function compareJob(
+        UserRepository $userRepo,
+        JobMatchAnalyzer $jobMatchAnalyzer,
+        Request $request,
+    ): Response {
+        $user = $userRepo->findOneBy([]);
+        if (!$user) {
+            return $this->redirectToRoute('app_dashboard');
+        }
+
+        if (!$this->isCsrfTokenValid('compare_job', (string) $request->request->get('_token'))) {
+            return $this->redirectToRoute('app_cv_analysis');
+        }
+
+        $jobDescription = trim((string) $request->request->get('job_description', ''));
+        if ($jobDescription === '') {
+            $this->addFlash('error', 'Please paste a job description.');
+
+            return $this->redirectToRoute('app_cv_analysis');
+        }
+
+        $session = $request->getSession();
+        $cached = $session->get(self::SESSION_MATCH_KEY);
+
+        $key = 'job_'.md5($jobDescription);
+
+        if (is_array($cached) && isset($cached[$key]) && ($cached[$key]['_ts'] ?? 0) + self::SESSION_TTL > time()) {
+            $result = $cached[$key];
+            unset($result['_ts']);
+        } else {
+            try {
+                $result = $jobMatchAnalyzer->compareWithJobDescription($user, $jobDescription);
+                if ($result !== null) {
+                    $cached = is_array($cached) ? $cached : [];
+                    $result['_ts'] = time();
+                    $cached[$key] = $result;
+                    $session->set(self::SESSION_MATCH_KEY, $cached);
+                    unset($result['_ts']);
+                }
+            } catch (Throwable) {
+                $this->addFlash('error', 'Failed to analyze job description.');
+
+                return $this->redirectToRoute('app_cv_analysis');
+            }
+        }
+
+        return $this->render('cv_analysis/_comparison.html.twig', [
+            'matchResult' => $result,
+            'jobDescription' => $jobDescription,
         ]);
     }
 
