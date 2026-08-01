@@ -52,7 +52,10 @@ final class TokenEncryptionServiceTest extends TestCase
         $encrypted = $this->service->encrypt($original);
         $decoded = base64_decode($encrypted);
         $decodedArray = str_split($decoded);
-        $decodedArray[10] = chr(ord($decodedArray[10]) ^ 0xFF);
+        $byte = ord($decodedArray[10]);
+        $tamperedByte = $byte ^ 0xFF;
+        assert($tamperedByte >= 0 && $tamperedByte <= 255);
+        $decodedArray[10] = chr($tamperedByte);
         $tampered = base64_encode(implode('', $decodedArray));
 
         $this->expectException(RuntimeException::class);
