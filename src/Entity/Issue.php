@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\IssueRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: IssueRepository::class)]
@@ -33,7 +34,7 @@ class Issue
     private string $state;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $closedAt = null;
+    private ?DateTimeImmutable $closedAt = null;
 
     #[ORM\Column]
     private array $labels = [];
@@ -42,11 +43,11 @@ class Issue
     private array $metadata = [];
 
     #[ORM\Column]
-    private \DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -114,12 +115,12 @@ class Issue
         return $this;
     }
 
-    public function getClosedAt(): ?\DateTimeImmutable
+    public function getClosedAt(): ?DateTimeImmutable
     {
         return $this->closedAt;
     }
 
-    public function setClosedAt(?\DateTimeImmutable $closedAt): self
+    public function setClosedAt(?DateTimeImmutable $closedAt): self
     {
         $this->closedAt = $closedAt;
 
@@ -150,7 +151,7 @@ class Issue
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }

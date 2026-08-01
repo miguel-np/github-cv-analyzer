@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Analysis\Provider;
 
 use App\Service\Analysis\LlmClientInterface;
+use RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class OpenAiProvider implements LlmClientInterface
@@ -18,6 +19,11 @@ final readonly class OpenAiProvider implements LlmClientInterface
     ) {
     }
 
+    /**
+     * @param array<string, mixed>|null $jsonSchema
+     *
+     * @return array<string, mixed>
+     */
     public function chat(string $systemPrompt, string $userPrompt, ?array $jsonSchema = null): array
     {
         $messages = [];
@@ -47,7 +53,7 @@ final readonly class OpenAiProvider implements LlmClientInterface
 
         $response = $this->httpClient->request('POST', 'https://api.openai.com/v1/chat/completions', [
             'headers' => [
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Authorization' => 'Bearer '.$this->apiKey,
                 'Content-Type' => 'application/json',
             ],
             'json' => $body,
@@ -60,7 +66,7 @@ final readonly class OpenAiProvider implements LlmClientInterface
         $decoded = json_decode($content, true);
 
         if (!is_array($decoded)) {
-            throw new \RuntimeException('OpenAI returned invalid JSON: ' . $content);
+            throw new RuntimeException('OpenAI returned invalid JSON: '.$content);
         }
 
         return $decoded;

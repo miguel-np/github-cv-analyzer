@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\PullRequestRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PullRequestRepository::class)]
@@ -45,17 +46,17 @@ class PullRequest
     private int $changedFiles = 0;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $mergedAt = null;
+    private ?DateTimeImmutable $mergedAt = null;
 
     #[ORM\Column]
     private array $metadata = [];
 
     #[ORM\Column]
-    private \DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -171,12 +172,12 @@ class PullRequest
         return $this;
     }
 
-    public function getMergedAt(): ?\DateTimeImmutable
+    public function getMergedAt(): ?DateTimeImmutable
     {
         return $this->mergedAt;
     }
 
-    public function setMergedAt(?\DateTimeImmutable $mergedAt): self
+    public function setMergedAt(?DateTimeImmutable $mergedAt): self
     {
         $this->mergedAt = $mergedAt;
 
@@ -195,7 +196,7 @@ class PullRequest
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
-use App\Entity\User;
 use App\Service\Analysis\CvImprovementAnalyzer;
 use App\Service\Analysis\LlmClientInterface;
 use App\Service\Analysis\LlmFactoryInterface;
@@ -13,7 +12,9 @@ use App\Tests\Factory\CommitFactory;
 use App\Tests\Factory\GithubAccountFactory;
 use App\Tests\Factory\GithubRepoFactory;
 use App\Tests\Factory\UserFactory;
+use DateTimeImmutable;
 use Psr\Log\NullLogger;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -81,7 +82,7 @@ final class CvImprovementAnalyzerTest extends KernelTestCase
         $commit = CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'cv-analysis-sha',
-            'date' => new \DateTimeImmutable('-7 days'),
+            'date' => new DateTimeImmutable('-7 days'),
         ])->_real();
 
         AnalysisResultFactory::createOne([
@@ -170,7 +171,7 @@ final class CvImprovementAnalyzerTest extends KernelTestCase
         $container = self::getContainer();
 
         $mockLlm = $this->createMock(LlmClientInterface::class);
-        $mockLlm->method('chat')->willThrowException(new \RuntimeException('LLM unavailable'));
+        $mockLlm->method('chat')->willThrowException(new RuntimeException('LLM unavailable'));
         $mockLlm->method('getProviderName')->willReturn('ollama');
         $mockLlm->method('getModelName')->willReturn('llama3.2');
 

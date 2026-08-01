@@ -16,4 +16,4 @@ AGENTS.md
 phpunit.xml.dist
 tests/
 .github/
-docker/
+# docker/ directory is needed for Dockerfile (opcache.ini, etc.)

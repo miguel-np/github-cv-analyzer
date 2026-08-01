@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Factory;
 
 use App\Entity\Commit;
+use DateTimeImmutable;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
 /**
@@ -25,7 +26,7 @@ final class CommitFactory extends PersistentProxyObjectFactory
             'authorEmail' => self::faker()->email(),
             'authorName' => self::faker()->name(),
             'message' => self::faker()->sentence(),
-            'date' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeThisYear()),
+            'date' => DateTimeImmutable::createFromMutable(self::faker()->dateTimeThisYear()),
             'additions' => self::faker()->numberBetween(1, 500),
             'deletions' => self::faker()->numberBetween(0, 200),
             'filesChanged' => self::faker()->numberBetween(1, 20),

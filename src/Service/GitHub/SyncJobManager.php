@@ -6,6 +6,7 @@ namespace App\Service\GitHub;
 
 use App\Entity\GithubAccount;
 use App\Entity\SyncJob;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class SyncJobManager
@@ -21,7 +22,7 @@ final readonly class SyncJobManager
         $job->setGithubAccount($account);
         $job->setType($type);
         $job->setStatus(SyncJob::STATUS_RUNNING);
-        $job->setStartedAt(new \DateTimeImmutable());
+        $job->setStartedAt(new DateTimeImmutable());
 
         $this->em->persist($job);
         $this->em->flush();
@@ -33,7 +34,7 @@ final readonly class SyncJobManager
     {
         $job->setStatus(SyncJob::STATUS_COMPLETED);
         $job->setItemsProcessed($itemsProcessed);
-        $job->setFinishedAt(new \DateTimeImmutable());
+        $job->setFinishedAt(new DateTimeImmutable());
 
         $this->em->flush();
     }
@@ -41,8 +42,8 @@ final readonly class SyncJobManager
     public function fail(SyncJob $job, string $error): void
     {
         $job->setStatus(SyncJob::STATUS_FAILED);
-        $job->setErrorLog(['error' => $error, 'failed_at' => (new \DateTimeImmutable())->format('c')]);
-        $job->setFinishedAt(new \DateTimeImmutable());
+        $job->setErrorLog(['error' => $error, 'failed_at' => (new DateTimeImmutable())->format('c')]);
+        $job->setFinishedAt(new DateTimeImmutable());
 
         $this->em->flush();
     }
@@ -51,7 +52,7 @@ final readonly class SyncJobManager
     {
         return $this->em->getRepository(SyncJob::class)->findOneBy(
             ['githubAccount' => $account, 'status' => SyncJob::STATUS_RUNNING],
-            ['startedAt' => 'DESC']
+            ['startedAt' => 'DESC'],
         );
     }
 }

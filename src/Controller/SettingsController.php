@@ -14,11 +14,13 @@ use App\Service\GitHub\GitHubClientInterface;
 use App\Service\GitHub\TokenEncryptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Github\Exception\RuntimeException as GithubRuntimeException;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Throwable;
 
 class SettingsController extends AbstractController
 {
@@ -41,8 +43,8 @@ class SettingsController extends AbstractController
         $verificationResult = $request->getSession()->get('github_verification');
         $request->getSession()->remove('github_verification');
 
-        if ($request->isMethod('POST') && $this->isCsrfTokenValid('settings', $request->request->get('_token'))) {
-            $token = trim($request->request->get('github_token', ''));
+        if ($request->isMethod('POST') && $this->isCsrfTokenValid('settings', (string) $request->request->get('_token'))) {
+            $token = trim((string) $request->request->get('github_token', ''));
 
             if ($token === '') {
                 $this->addFlash('error', 'El token de GitHub no puede estar vacío.');
@@ -68,13 +70,13 @@ class SettingsController extends AbstractController
 
                 $this->addFlash('success', sprintf(
                     'Cuenta conectada como %s. Sincronización iniciada en segundo plano.',
-                    $username
+                    $username,
                 ));
             } catch (GithubRuntimeException $e) {
                 $this->addFlash('error', 'Credenciales de GitHub inválidas. Verifica el token.');
-            } catch (\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 $this->addFlash('error', 'Error de conexión con GitHub. Inténtalo de nuevo.');
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->addFlash('error', 'Error inesperado al sincronizar.');
             }
 
@@ -84,7 +86,7 @@ class SettingsController extends AbstractController
         $jobs = $account ? $jobRepo->findBy(
             ['githubAccount' => $account],
             ['createdAt' => 'DESC'],
-            5
+            5,
         ) : [];
 
         return $this->render('settings/index.html.twig', [
@@ -100,9 +102,9 @@ class SettingsController extends AbstractController
         TokenEncryptionService $tokenEncryption,
         GitHubClientInterface $gitHubClient,
     ): Response {
-        $token = trim($request->request->get('github_token', ''));
+        $token = trim((string) $request->request->get('github_token', ''));
 
-        if ($token === '' || !$this->isCsrfTokenValid('verify', $request->request->get('_token'))) {
+        if ($token === '' || !$this->isCsrfTokenValid('verify', (string) $request->request->get('_token'))) {
             return $this->redirectToRoute('app_settings');
         }
 
@@ -120,7 +122,7 @@ class SettingsController extends AbstractController
                 'success' => false,
                 'error' => 'Token inválido o expirado.',
             ]);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             $request->getSession()->set('github_verification', [
                 'success' => false,
                 'error' => 'Error de conexión con GitHub.',
@@ -138,7 +140,7 @@ class SettingsController extends AbstractController
         MessageBusInterface $bus,
         Request $request,
     ): Response {
-        if (!$this->isCsrfTokenValid('resync', $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('resync', (string) $request->request->get('_token'))) {
             return $this->redirectToRoute('app_settings');
         }
 
@@ -160,7 +162,7 @@ class SettingsController extends AbstractController
         UserRepository $userRepo,
         TokenEncryptionService $tokenEncryption,
     ): Response {
-        if (!$this->isCsrfTokenValid('llm', $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('llm', (string) $request->request->get('_token'))) {
             return $this->redirectToRoute('app_settings');
         }
 
@@ -172,7 +174,7 @@ class SettingsController extends AbstractController
         $settings['llm_enabled'] = $request->request->getBoolean('llm_enabled');
         $settings['ollama_host'] = $request->request->get('ollama_host', 'http://localhost:11434');
 
-        $apiKey = trim($request->request->get('llm_api_key', ''));
+        $apiKey = trim((string) $request->request->get('llm_api_key', ''));
 
         if ($apiKey !== '') {
             $settings['llm_api_key'] = $tokenEncryption->encrypt($apiKey);

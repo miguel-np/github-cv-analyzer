@@ -89,6 +89,7 @@ class GithubRepoRepository extends ServiceEntityRepository
 
     /**
      * @param int[] $repoIds
+     *
      * @return array<array{name: string, count: int}>
      */
     public function getTopTechnologies(array $repoIds): array
@@ -116,7 +117,7 @@ class GithubRepoRepository extends ServiceEntityRepository
 
         return array_map(
             fn ($r) => ['name' => TechnologyHelper::normalize($r['name']), 'count' => (int) $r['cnt']],
-            $rows->fetchAllAssociative()
+            $rows->fetchAllAssociative(),
         );
     }
 }

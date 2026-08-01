@@ -6,6 +6,7 @@ namespace App\Service\Analysis\Provider;
 
 use App\Service\Analysis\LlmClientInterface;
 use App\Service\Analysis\Shared\JsonHelper;
+use RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class OllamaProvider implements LlmClientInterface
@@ -20,6 +21,11 @@ final readonly class OllamaProvider implements LlmClientInterface
     ) {
     }
 
+    /**
+     * @param array<string, mixed>|null $jsonSchema
+     *
+     * @return array<string, mixed>
+     */
     public function chat(string $systemPrompt, string $userPrompt, ?array $jsonSchema = null): array
     {
         $messages = [];
@@ -40,7 +46,7 @@ final readonly class OllamaProvider implements LlmClientInterface
             $body['format'] = $jsonSchema;
         }
 
-        $response = $this->httpClient->request('POST', $this->host . '/api/chat', [
+        $response = $this->httpClient->request('POST', $this->host.'/api/chat', [
             'json' => $body,
             'timeout' => 120,
         ]);
@@ -51,7 +57,7 @@ final readonly class OllamaProvider implements LlmClientInterface
         $decoded = json_decode(JsonHelper::extract($content), true);
 
         if (!is_array($decoded)) {
-            throw new \RuntimeException('Ollama returned invalid JSON: ' . $content);
+            throw new RuntimeException('Ollama returned invalid JSON: '.$content);
         }
 
         return $decoded;

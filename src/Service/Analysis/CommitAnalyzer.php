@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Service\Analysis\Prompt\CommitAnalyzerPrompt;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 final readonly class CommitAnalyzer
 {
@@ -29,9 +30,9 @@ final readonly class CommitAnalyzer
             CommitAnalyzerPrompt::getSystemPrompt(),
             CommitAnalyzerPrompt::getUserPrompt(
                 $commit->getMessage(),
-                $commit->getDiffStats()
+                $commit->getDiffStats(),
             ),
-            CommitAnalyzerPrompt::getJsonSchema()
+            CommitAnalyzerPrompt::getJsonSchema(),
         );
 
         $durationMs = (int) ((hrtime(true) - $startTime) / 1_000_000);
@@ -54,6 +55,9 @@ final readonly class CommitAnalyzer
         return $result;
     }
 
+    /**
+     * @param Commit[] $commits
+     */
     public function analyzeBatch(array $commits, User $user): int
     {
         $analyzed = 0;
@@ -66,7 +70,7 @@ final readonly class CommitAnalyzer
             try {
                 $this->analyze($commit, $user);
                 ++$analyzed;
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 continue;
             }
         }

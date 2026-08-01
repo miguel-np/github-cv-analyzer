@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Factory;
 
 use App\Entity\SyncJob;
+use DateTimeImmutable;
 use Zenstruck\Foundry\Persistence\PersistentProxyObjectFactory;
 
 /**
@@ -24,8 +25,8 @@ final class SyncJobFactory extends PersistentProxyObjectFactory
             'type' => SyncJob::TYPE_FULL,
             'status' => SyncJob::STATUS_COMPLETED,
             'itemsProcessed' => self::faker()->numberBetween(1, 50),
-            'startedAt' => new \DateTimeImmutable('-1 hour'),
-            'finishedAt' => new \DateTimeImmutable(),
+            'startedAt' => new DateTimeImmutable('-1 hour'),
+            'finishedAt' => new DateTimeImmutable(),
             'errorLog' => [],
         ];
     }

@@ -11,6 +11,7 @@ use App\Service\GitHub\GitHubSyncService;
 use App\Tests\Factory\GithubAccountFactory;
 use App\Tests\Factory\GithubRepoFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use Generator;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -138,7 +139,7 @@ final class GitHubSyncServiceTest extends KernelTestCase
         ]];
 
         $this->gitHubClient->method('listCommits')
-            ->willReturnCallback(function () use ($commitData): \Generator {
+            ->willReturnCallback(function () use ($commitData): Generator {
                 yield $commitData;
             });
 
@@ -178,7 +179,7 @@ final class GitHubSyncServiceTest extends KernelTestCase
         ];
 
         $this->gitHubClient->method('listPullRequests')
-            ->willReturnCallback(function () use ($prData): \Generator {
+            ->willReturnCallback(function () use ($prData): Generator {
                 yield $prData;
             });
 
@@ -213,7 +214,7 @@ final class GitHubSyncServiceTest extends KernelTestCase
     /**
      * @param array<array-key, mixed> $items
      */
-    private function createGenerator(array $items): \Generator
+    private function createGenerator(array $items): Generator
     {
         foreach ($items as $item) {
             yield $item;

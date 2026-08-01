@@ -37,7 +37,7 @@ final class CommitAnalyzerPromptTest extends TestCase
     public function testGetUserPromptTruncatesFileListTo20(): void
     {
         $files = [];
-        for ($i = 1; $i <= 25; $i++) {
+        for ($i = 1; $i <= 25; ++$i) {
             $files[] = ['filename' => "src/File{$i}.php", 'additions' => $i, 'deletions' => 0];
         }
 

@@ -8,13 +8,14 @@ use App\Entity\GithubAccount;
 use App\Entity\GithubRepo;
 use App\Message\AnalyzeCommitMessage;
 use App\Message\SyncRepositoryMessage;
+use App\Repository\CommitRepository;
 use App\Service\GitHub\GitHubSyncService;
 use App\Service\GitHub\SyncJobManager;
-use App\Repository\CommitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Throwable;
 
 #[AsMessageHandler]
 final readonly class SyncRepositoryHandler
@@ -74,7 +75,7 @@ final readonly class SyncRepositoryHandler
             foreach ($unanalyzedCommits as $commit) {
                 $this->bus->dispatch(new AnalyzeCommitMessage($commit->getId()));
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('SyncRepositoryHandler failed', [
                 'repo' => $repo->getFullName(),
                 'error' => $e->getMessage(),

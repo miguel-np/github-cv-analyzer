@@ -17,6 +17,7 @@ class CommitRepository extends ServiceEntityRepository
 
     /**
      * @param int[] $repoIds
+     *
      * @return array<array{month: string, count: int}>
      */
     public function countByMonth(array $repoIds): array
@@ -42,6 +43,7 @@ class CommitRepository extends ServiceEntityRepository
 
     /**
      * @param int[] $repoIds
+     *
      * @return array<array{classification: string, count: int}>
      */
     public function countByClassification(array $repoIds): array
@@ -70,6 +72,7 @@ class CommitRepository extends ServiceEntityRepository
 
     /**
      * @param int[] $repoIds
+     *
      * @return array<array{name: string, count: int}>
      */
     public function countByRepo(array $repoIds): array
@@ -79,19 +82,18 @@ class CommitRepository extends ServiceEntityRepository
         }
 
         return $this->createQueryBuilder('c')
-            ->select('r.name, COUNT(c.id) AS cnt')
+            ->select('r.name, COUNT(c.id) AS count')
             ->join('c.repository', 'r')
             ->where('c.repository IN (:ids)')
             ->setParameter('ids', $repoIds)
             ->groupBy('r.name')
-            ->orderBy('cnt', 'DESC')
+            ->orderBy('count', 'DESC')
             ->setMaxResults(10)
             ->getQuery()
             ->getArrayResult();
     }
 
     /**
-     * @param int $repoId
      * @return Commit[]
      */
     public function findByRepoWithAnalysis(int $repoId, int $limit = 50): array
@@ -121,7 +123,7 @@ class CommitRepository extends ServiceEntityRepository
         return (int) $conn->executeQuery(
             'SELECT COUNT(*) FROM commits c JOIN analysis_results a ON a.commit_id = c.id WHERE c.repository_id IN (:ids)',
             ['ids' => $repoIds],
-            ['ids' => \Doctrine\DBAL\ArrayParameterType::INTEGER]
+            ['ids' => \Doctrine\DBAL\ArrayParameterType::INTEGER],
         )->fetchOne();
     }
 }

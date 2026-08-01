@@ -4,13 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
-use App\Entity\GithubAccount;
-use App\Tests\Factory\CommitFactory;
 use App\Tests\Factory\GithubAccountFactory;
 use App\Tests\Factory\GithubRepoFactory;
-use App\Tests\Factory\IssueFactory;
-use App\Tests\Factory\PullRequestFactory;
-use App\Tests\Factory\UserFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Zenstruck\Foundry\Test\Factories;

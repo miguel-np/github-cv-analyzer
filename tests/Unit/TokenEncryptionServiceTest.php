@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Service\GitHub\TokenEncryptionService;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class TokenEncryptionServiceTest extends TestCase
 {
@@ -38,7 +39,7 @@ final class TokenEncryptionServiceTest extends TestCase
 
     public function testDecryptWithInvalidBase64ThrowsRuntimeException(): void
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Invalid encrypted token format');
 
         $this->service->decrypt('not-valid-base64!@#$%');
@@ -54,7 +55,7 @@ final class TokenEncryptionServiceTest extends TestCase
         $decodedArray[10] = chr(ord($decodedArray[10]) ^ 0xFF);
         $tampered = base64_encode(implode('', $decodedArray));
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Token decryption failed');
 
         $this->service->decrypt($tampered);

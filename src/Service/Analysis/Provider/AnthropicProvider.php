@@ -6,6 +6,7 @@ namespace App\Service\Analysis\Provider;
 
 use App\Service\Analysis\LlmClientInterface;
 use App\Service\Analysis\Shared\JsonHelper;
+use RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class AnthropicProvider implements LlmClientInterface
@@ -19,6 +20,11 @@ final readonly class AnthropicProvider implements LlmClientInterface
     ) {
     }
 
+    /**
+     * @param array<string, mixed>|null $jsonSchema
+     *
+     * @return array<string, mixed>
+     */
     public function chat(string $systemPrompt, string $userPrompt, ?array $jsonSchema = null): array
     {
         $messages = [];
@@ -42,7 +48,7 @@ final readonly class AnthropicProvider implements LlmClientInterface
 
         if ($systemPrompt !== '') {
             if ($jsonSchema !== null) {
-                $body['system'] = $systemPrompt . "\n\nRespond ONLY with valid JSON matching this schema:\n" . json_encode($jsonSchema, JSON_PRETTY_PRINT) . "\nDo not include any other text.";
+                $body['system'] = $systemPrompt."\n\nRespond ONLY with valid JSON matching this schema:\n".json_encode($jsonSchema, JSON_PRETTY_PRINT)."\nDo not include any other text.";
             } else {
                 $body['system'] = $systemPrompt;
             }
@@ -64,7 +70,7 @@ final readonly class AnthropicProvider implements LlmClientInterface
         $decoded = json_decode(JsonHelper::extract($content), true);
 
         if (!is_array($decoded)) {
-            throw new \RuntimeException('Anthropic returned invalid JSON: ' . $content);
+            throw new RuntimeException('Anthropic returned invalid JSON: '.$content);
         }
 
         return $decoded;

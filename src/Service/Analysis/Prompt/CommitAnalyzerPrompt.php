@@ -29,6 +29,9 @@ Be concise in the summary (max 120 chars).
 PROMPT;
     }
 
+    /**
+     * @param array<array{filename?: string, additions?: int, deletions?: int}> $diffStats
+     */
     public static function getUserPrompt(string $message, array $diffStats): string
     {
         $fileList = array_slice(array_column($diffStats, 'filename'), 0, 20);
@@ -42,10 +45,13 @@ PROMPT;
             implode(', ', $extensions),
             array_sum(array_column($diffStats, 'additions')),
             array_sum(array_column($diffStats, 'deletions')),
-            count($diffStats)
+            count($diffStats),
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function getJsonSchema(): array
     {
         return [
@@ -93,6 +99,7 @@ PROMPT;
 
     /**
      * @param string[] $files
+     *
      * @return string[]
      */
     private static function extractExtensions(array $files): array

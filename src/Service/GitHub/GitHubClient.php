@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service\GitHub;
 
+use Generator;
 use Github\Client;
 use Github\Exception\RuntimeException as GithubRuntimeException;
 use Github\HttpClient\Builder;
+use RuntimeException;
 use Symfony\Component\HttpClient\HttplugClient;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Throwable;
 
 final class GitHubClient implements GitHubClientInterface
 {
@@ -50,7 +53,7 @@ final class GitHubClient implements GitHubClientInterface
                 return ['valid' => false, 'error' => 'Invalid or expired token.'];
             }
 
-            return ['valid' => false, 'error' => 'Could not verify token: ' . $e->getMessage()];
+            return ['valid' => false, 'error' => 'Could not verify token: '.$e->getMessage()];
         }
     }
 
@@ -61,13 +64,13 @@ final class GitHubClient implements GitHubClientInterface
             throw new GithubRuntimeException('Not authenticated');
         }
 
-        return $result['username'];
+        return $result['username'] ?? '';
     }
 
     /**
-     * @return \Generator<array>
+     * @return Generator<array<string, mixed>>
      */
-    public function listRepositories(): \Generator
+    public function listRepositories(): Generator
     {
         $this->checkRateLimit();
         $page = 1;
@@ -82,9 +85,9 @@ final class GitHubClient implements GitHubClientInterface
     }
 
     /**
-     * @return \Generator<array>
+     * @return Generator<array<string, mixed>>
      */
-    public function listCommits(string $owner, string $repo, ?string $since = null, ?string $author = null): \Generator
+    public function listCommits(string $owner, string $repo, ?string $since = null, ?string $author = null): Generator
     {
         $this->checkRateLimit();
         $page = 1;
@@ -116,9 +119,9 @@ final class GitHubClient implements GitHubClientInterface
     }
 
     /**
-     * @return \Generator<array>
+     * @return Generator<array<string, mixed>>
      */
-    public function listPullRequests(string $owner, string $repo, string $state = 'all', ?string $since = null): \Generator
+    public function listPullRequests(string $owner, string $repo, string $state = 'all', ?string $since = null): Generator
     {
         $this->checkRateLimit();
         $page = 1;
@@ -144,9 +147,9 @@ final class GitHubClient implements GitHubClientInterface
     }
 
     /**
-     * @return \Generator<array>
+     * @return Generator<array<string, mixed>>
      */
-    public function listIssues(string $owner, string $repo, string $state = 'all', ?string $since = null): \Generator
+    public function listIssues(string $owner, string $repo, string $state = 'all', ?string $since = null): Generator
     {
         $this->checkRateLimit();
         $page = 1;
@@ -200,13 +203,13 @@ final class GitHubClient implements GitHubClientInterface
                 $response = $this->client->api('rate_limit')->getRateLimits();
 
                 return $response['resources']['core']['remaining'] ?? 5000;
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 return 5000;
             }
         });
 
         if ($remaining < 50) {
-            throw new \RuntimeException('GitHub API rate limit nearly exceeded. Try again in a few minutes.');
+            throw new RuntimeException('GitHub API rate limit nearly exceeded. Try again in a few minutes.');
         }
     }
 }

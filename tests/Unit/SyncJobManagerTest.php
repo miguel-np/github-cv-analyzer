@@ -81,7 +81,7 @@ final class SyncJobManagerTest extends TestCase
             ->method('findOneBy')
             ->with(
                 ['githubAccount' => $account, 'status' => SyncJob::STATUS_RUNNING],
-                ['startedAt' => 'DESC']
+                ['startedAt' => 'DESC'],
             )
             ->willReturn(null);
 

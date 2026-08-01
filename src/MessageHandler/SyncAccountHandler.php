@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Throwable;
 
 #[AsMessageHandler]
 final readonly class SyncAccountHandler
@@ -46,11 +47,11 @@ final readonly class SyncAccountHandler
             ]);
 
             foreach ($repos as $repo) {
-                $this->bus->dispatch(new SyncRepositoryMessage($repo->getId(), $message->githubAccountId));
+                $this->bus->dispatch(new SyncRepositoryMessage((int) $repo->getId(), $message->githubAccountId));
             }
 
             $this->jobManager->complete($job, count($repos));
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('SyncAccountHandler failed', [
                 'account' => $account->getGithubUsername(),
                 'error' => $e->getMessage(),

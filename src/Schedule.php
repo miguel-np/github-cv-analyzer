@@ -30,8 +30,8 @@ class Schedule implements ScheduleProviderInterface
             ->add(
                 RecurringMessage::every(
                     $this->syncInterval,
-                    new TriggerDailySyncMessage()
-                )
+                    new TriggerDailySyncMessage(),
+                ),
             );
     }
 }

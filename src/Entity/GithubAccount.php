@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\GithubAccountRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -29,17 +30,17 @@ class GithubAccount
     private string $encryptedToken;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $lastSyncedAt = null;
+    private ?DateTimeImmutable $lastSyncedAt = null;
 
     #[ORM\ManyToMany(targetEntity: GithubRepo::class, mappedBy: 'contributors')]
     private Collection $githubRepos;
 
     #[ORM\Column]
-    private \DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
         $this->githubRepos = new ArrayCollection();
     }
 
@@ -84,19 +85,19 @@ class GithubAccount
         return $this;
     }
 
-    public function getLastSyncedAt(): ?\DateTimeImmutable
+    public function getLastSyncedAt(): ?DateTimeImmutable
     {
         return $this->lastSyncedAt;
     }
 
-    public function setLastSyncedAt(?\DateTimeImmutable $lastSyncedAt): self
+    public function setLastSyncedAt(?DateTimeImmutable $lastSyncedAt): self
     {
         $this->lastSyncedAt = $lastSyncedAt;
 
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }

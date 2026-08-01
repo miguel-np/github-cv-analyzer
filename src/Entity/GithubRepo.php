@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\GithubRepoRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -49,7 +50,7 @@ class GithubRepo
     private array $metadata = [];
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $lastSyncedAt = null;
+    private ?DateTimeImmutable $lastSyncedAt = null;
 
     #[ORM\ManyToMany(targetEntity: GithubAccount::class, inversedBy: 'githubRepos')]
     private Collection $contributors;
@@ -67,11 +68,11 @@ class GithubRepo
     private Collection $technologies;
 
     #[ORM\Column]
-    private \DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
         $this->contributors = new ArrayCollection();
         $this->commits = new ArrayCollection();
         $this->pullRequests = new ArrayCollection();
@@ -204,12 +205,12 @@ class GithubRepo
         return $this;
     }
 
-    public function getLastSyncedAt(): ?\DateTimeImmutable
+    public function getLastSyncedAt(): ?DateTimeImmutable
     {
         return $this->lastSyncedAt;
     }
 
-    public function setLastSyncedAt(?\DateTimeImmutable $lastSyncedAt): self
+    public function setLastSyncedAt(?DateTimeImmutable $lastSyncedAt): self
     {
         $this->lastSyncedAt = $lastSyncedAt;
 
@@ -259,7 +260,7 @@ class GithubRepo
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }

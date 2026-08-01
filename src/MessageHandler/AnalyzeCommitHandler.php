@@ -11,6 +11,7 @@ use App\Service\Analysis\CommitAnalyzer;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Throwable;
 
 #[AsMessageHandler]
 final readonly class AnalyzeCommitHandler
@@ -64,7 +65,7 @@ final readonly class AnalyzeCommitHandler
             $this->logger->info('Commit analyzed successfully', [
                 'sha' => substr($commit->getSha(), 0, 7),
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Failed to analyze commit', [
                 'sha' => substr($commit->getSha(), 0, 7),
                 'error' => $e->getMessage(),

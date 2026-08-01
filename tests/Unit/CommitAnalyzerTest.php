@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Service\Analysis\CommitAnalyzer;
 use App\Service\Analysis\LlmClientInterface;
 use App\Service\Analysis\LlmFactoryInterface;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -135,7 +136,7 @@ final class CommitAnalyzerTest extends TestCase
         ]);
         $commit->setAuthorEmail('dev@example.com');
         $commit->setAuthorName('Dev');
-        $commit->setDate(new \DateTimeImmutable());
+        $commit->setDate(new DateTimeImmutable());
         $commit->setAdditions(10);
         $commit->setDeletions(2);
         $commit->setFilesChanged(1);

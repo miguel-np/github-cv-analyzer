@@ -9,6 +9,7 @@ use App\Service\Analysis\Provider\AnthropicProvider;
 use App\Service\Analysis\Provider\OllamaProvider;
 use App\Service\Analysis\Provider\OpenAiProvider;
 use App\Service\GitHub\TokenEncryptionService;
+use RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class LlmFactory implements LlmFactoryInterface
@@ -30,12 +31,12 @@ final readonly class LlmFactory implements LlmFactoryInterface
         return match ($provider) {
             'openai' => new OpenAiProvider(
                 $this->httpClient,
-                $apiKey ?? throw new \RuntimeException('OpenAI API key not configured'),
+                $apiKey ?? throw new RuntimeException('OpenAI API key not configured'),
                 $model ?? 'gpt-4o-mini',
             ),
             'anthropic' => new AnthropicProvider(
                 $this->httpClient,
-                $apiKey ?? throw new \RuntimeException('Anthropic API key not configured'),
+                $apiKey ?? throw new RuntimeException('Anthropic API key not configured'),
                 $model ?? 'claude-3-5-haiku-latest',
             ),
             default => new OllamaProvider(

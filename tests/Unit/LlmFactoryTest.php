@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Entity\User;
-use App\Service\Analysis\LlmClientInterface;
 use App\Service\Analysis\LlmFactory;
 use App\Service\Analysis\Provider\AnthropicProvider;
 use App\Service\Analysis\Provider\OllamaProvider;
 use App\Service\Analysis\Provider\OpenAiProvider;
 use App\Service\GitHub\TokenEncryptionService;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class LlmFactoryTest extends TestCase
@@ -85,7 +85,7 @@ final class LlmFactoryTest extends TestCase
             'llm_enabled' => true,
         ]);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('OpenAI API key not configured');
 
         $this->factory->create($user);
@@ -99,7 +99,7 @@ final class LlmFactoryTest extends TestCase
             'llm_enabled' => true,
         ]);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Anthropic API key not configured');
 
         $this->factory->create($user);

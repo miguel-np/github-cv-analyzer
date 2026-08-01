@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\GitHub;
 
+use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class TokenEncryptionService
@@ -19,7 +20,7 @@ final readonly class TokenEncryptionService
         $this->key = sodium_crypto_generichash(
             $appSecret,
             self::HASH_CONTEXT,
-            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES
+            SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_KEYBYTES,
         );
     }
 
@@ -31,17 +32,17 @@ final readonly class TokenEncryptionService
             $token,
             '',
             $nonce,
-            $this->key
+            $this->key,
         );
 
-        return base64_encode($nonce . $ciphertext);
+        return base64_encode($nonce.$ciphertext);
     }
 
     public function decrypt(string $encrypted): string
     {
         $decoded = base64_decode($encrypted, true);
         if ($decoded === false) {
-            throw new \RuntimeException('Invalid encrypted token format');
+            throw new RuntimeException('Invalid encrypted token format');
         }
 
         $nonce = mb_substr($decoded, 0, SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES, '8bit');
@@ -51,11 +52,11 @@ final readonly class TokenEncryptionService
             $ciphertext,
             '',
             $nonce,
-            $this->key
+            $this->key,
         );
 
         if ($decrypted === false) {
-            throw new \RuntimeException('Token decryption failed');
+            throw new RuntimeException('Token decryption failed');
         }
 
         return $decrypted;

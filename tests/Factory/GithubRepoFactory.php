@@ -23,7 +23,7 @@ final class GithubRepoFactory extends PersistentProxyObjectFactory
 
         return [
             'githubId' => self::faker()->unique()->randomNumber(),
-            'fullName' => 'owner/' . $name,
+            'fullName' => 'owner/'.$name,
             'name' => $name,
             'description' => self::faker()->sentence(),
             'language' => self::faker()->randomElement(['PHP', 'TypeScript', 'Python', 'Go', 'Rust']),

@@ -24,14 +24,20 @@ Be specific and actionable. Skip generic advice like "learn more".
 PROMPT;
     }
 
+    /**
+     * @param array<string, mixed> $context
+     */
     public static function getUserPrompt(array $context): string
     {
         return sprintf(
             "Analyze this developer profile for CV improvements:\n\n%s\n\nProvide 3-5 specific, actionable suggestions.",
-            json_encode($context, JSON_PRETTY_PRINT)
+            json_encode($context, JSON_PRETTY_PRINT),
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function getJsonSchema(): array
     {
         return [

@@ -8,6 +8,7 @@ use App\Repository\CommitRepository;
 use App\Tests\Factory\AnalysisResultFactory;
 use App\Tests\Factory\CommitFactory;
 use App\Tests\Factory\GithubRepoFactory;
+use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Zenstruck\Foundry\Test\Factories;
 use Zenstruck\Foundry\Test\ResetDatabase;
@@ -30,22 +31,22 @@ final class CommitRepositoryTest extends KernelTestCase
     public function testCountByMonthReturnsMonthlyAggregation(): void
     {
         $repo = GithubRepoFactory::createOne()->_real();
-        $repoId = $repo->getId();
+        $repoId = (int) $repo->getId();
 
         CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'jan-sha',
-            'date' => new \DateTimeImmutable('2026-01-15 10:00:00'),
+            'date' => new DateTimeImmutable('2026-01-15 10:00:00'),
         ]);
         CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'jan-sha-2',
-            'date' => new \DateTimeImmutable('2026-01-20 10:00:00'),
+            'date' => new DateTimeImmutable('2026-01-20 10:00:00'),
         ]);
         CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'feb-sha',
-            'date' => new \DateTimeImmutable('2026-02-05 10:00:00'),
+            'date' => new DateTimeImmutable('2026-02-05 10:00:00'),
         ]);
 
         $result = $this->commitRepo->countByMonth([$repoId]);
@@ -67,7 +68,7 @@ final class CommitRepositoryTest extends KernelTestCase
     public function testCountByClassificationReturnsBreakdownFromAnalyzedCommits(): void
     {
         $repo = GithubRepoFactory::createOne()->_real();
-        $repoId = $repo->getId();
+        $repoId = (int) $repo->getId();
 
         $commit1 = CommitFactory::createOne([
             'repository' => $repo,
@@ -139,11 +140,11 @@ final class CommitRepositoryTest extends KernelTestCase
 
         self::assertCount(3, $result);
         self::assertSame('alpha', $result[0]['name']);
-        self::assertSame(5, $result[0]['cnt']);
+        self::assertSame(5, $result[0]['count']);
         self::assertSame('beta', $result[1]['name']);
-        self::assertSame(3, $result[1]['cnt']);
+        self::assertSame(3, $result[1]['count']);
         self::assertSame('gamma', $result[2]['name']);
-        self::assertSame(1, $result[2]['cnt']);
+        self::assertSame(1, $result[2]['count']);
     }
 
     public function testCountByRepoReturnsEmptyForNoRepoIds(): void
@@ -156,17 +157,17 @@ final class CommitRepositoryTest extends KernelTestCase
     public function testFindByRepoWithAnalysisReturnsCommitsWithEagerLoadedResult(): void
     {
         $repo = GithubRepoFactory::createOne()->_real();
-        $repoId = $repo->getId();
+        $repoId = (int) $repo->getId();
 
         $commit1 = CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'eager-sha-1',
-            'date' => new \DateTimeImmutable('2026-01-01'),
+            'date' => new DateTimeImmutable('2026-01-01'),
         ])->_real();
         $commit2 = CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'eager-sha-2',
-            'date' => new \DateTimeImmutable('2026-06-01'),
+            'date' => new DateTimeImmutable('2026-06-01'),
         ])->_real();
 
         AnalysisResultFactory::createOne([
@@ -183,13 +184,13 @@ final class CommitRepositoryTest extends KernelTestCase
     public function testFindByRepoWithAnalysisRespectsLimit(): void
     {
         $repo = GithubRepoFactory::createOne()->_real();
-        $repoId = $repo->getId();
+        $repoId = (int) $repo->getId();
 
         for ($i = 0; $i < 15; ++$i) {
             CommitFactory::createOne([
                 'repository' => $repo,
                 'sha' => sprintf('limit-sha-%d', $i),
-                'date' => new \DateTimeImmutable("-{$i} days"),
+                'date' => new DateTimeImmutable("-{$i} days"),
             ]);
         }
 
@@ -201,7 +202,7 @@ final class CommitRepositoryTest extends KernelTestCase
     public function testFindByRepoWithAnalysisReturnsEmptyForRepoWithNoCommits(): void
     {
         $repo = GithubRepoFactory::createOne()->_real();
-        $repoId = $repo->getId();
+        $repoId = (int) $repo->getId();
 
         $commits = $this->commitRepo->findByRepoWithAnalysis($repoId);
 
@@ -211,7 +212,7 @@ final class CommitRepositoryTest extends KernelTestCase
     public function testCountAnalyzedByIdsReturnsOnlyAnalyzedCommitCount(): void
     {
         $repo = GithubRepoFactory::createOne()->_real();
-        $repoId = $repo->getId();
+        $repoId = (int) $repo->getId();
 
         $commit1 = CommitFactory::createOne([
             'repository' => $repo,

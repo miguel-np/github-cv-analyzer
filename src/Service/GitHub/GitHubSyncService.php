@@ -9,6 +9,7 @@ use App\Entity\GithubAccount;
 use App\Entity\GithubRepo;
 use App\Entity\Issue;
 use App\Entity\PullRequest;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -21,6 +22,9 @@ final readonly class GitHubSyncService
     ) {
     }
 
+    /**
+     * @return GithubRepo[]
+     */
     public function syncRepositories(GithubAccount $account): array
     {
         $existingByGithubId = $this->loadExistingReposByAccount($account);
@@ -45,7 +49,7 @@ final readonly class GitHubSyncService
             $synced[] = $githubRepo;
         }
 
-        $account->setLastSyncedAt(new \DateTimeImmutable());
+        $account->setLastSyncedAt(new DateTimeImmutable());
         $this->em->flush();
 
         $this->logger->info('GitHub sync completed', [
@@ -80,7 +84,7 @@ final readonly class GitHubSyncService
             $commit->setMessage($commitData['commit']['message']);
             $commit->setAuthorEmail($commitData['commit']['author']['email'] ?? '');
             $commit->setAuthorName($commitData['commit']['author']['name'] ?? '');
-            $commit->setDate(new \DateTimeImmutable($commitData['commit']['author']['date']));
+            $commit->setDate(new DateTimeImmutable($commitData['commit']['author']['date']));
             $commit->setAdditions($detail['stats']['additions'] ?? 0);
             $commit->setDeletions($detail['stats']['deletions'] ?? 0);
             $commit->setFilesChanged(count($detail['files'] ?? []));
@@ -96,7 +100,7 @@ final readonly class GitHubSyncService
             }
         }
 
-        $repo->setLastSyncedAt(new \DateTimeImmutable());
+        $repo->setLastSyncedAt(new DateTimeImmutable());
         $this->em->flush();
 
         $this->logger->info('Commit sync completed', [
@@ -130,7 +134,7 @@ final readonly class GitHubSyncService
             $pr->setAdditions($prData['additions'] ?? 0);
             $pr->setDeletions($prData['deletions'] ?? 0);
             $pr->setChangedFiles($prData['changed_files'] ?? 0);
-            $pr->setMergedAt($prData['merged_at'] ? new \DateTimeImmutable($prData['merged_at']) : null);
+            $pr->setMergedAt($prData['merged_at'] ? new DateTimeImmutable($prData['merged_at']) : null);
 
             $cls = $this->extractClassificationLabels($prData['labels'] ?? []);
             $pr->setMetadata([
@@ -173,7 +177,7 @@ final readonly class GitHubSyncService
             $issue->setTitle($issueData['title']);
             $issue->setBody($issueData['body'] ?? null);
             $issue->setState($issueData['state']);
-            $issue->setClosedAt($issueData['closed_at'] ? new \DateTimeImmutable($issueData['closed_at']) : null);
+            $issue->setClosedAt($issueData['closed_at'] ? new DateTimeImmutable($issueData['closed_at']) : null);
             $issue->setLabels($this->extractClassificationLabels($issueData['labels'] ?? []));
             $issue->setMetadata([
                 'user_login' => $issueData['user']['login'] ?? null,
@@ -279,11 +283,19 @@ final readonly class GitHubSyncService
         return array_map('intval', $issues);
     }
 
+    /**
+     * @param array<array{name?: string}> $labels
+     *
+     * @return string[]
+     */
     private function extractClassificationLabels(array $labels): array
     {
         return array_map(fn ($l) => $l['name'] ?? '', $labels);
     }
 
+    /**
+     * @param array<string, mixed> $repoData
+     */
     private function updateRepo(GithubRepo $repo, array $repoData): void
     {
         $repo->setGithubId($repoData['id']);
@@ -302,6 +314,9 @@ final readonly class GitHubSyncService
         ]);
     }
 
+    /**
+     * @param array<string, mixed> $repoData
+     */
     private function hasContributions(array $repoData): bool
     {
         return ($repoData['permissions']['push'] ?? false)

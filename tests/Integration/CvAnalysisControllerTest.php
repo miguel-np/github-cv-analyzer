@@ -11,6 +11,7 @@ use App\Tests\Factory\GithubRepoFactory;
 use App\Tests\Factory\IssueFactory;
 use App\Tests\Factory\PullRequestFactory;
 use App\Tests\Factory\UserFactory;
+use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Zenstruck\Foundry\Test\Factories;
@@ -152,13 +153,13 @@ final class CvAnalysisControllerTest extends WebTestCase
         $commit1 = CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'class-sha-1',
-            'date' => new \DateTimeImmutable('-30 days'),
+            'date' => new DateTimeImmutable('-30 days'),
         ])->_real();
 
         $commit2 = CommitFactory::createOne([
             'repository' => $repo,
             'sha' => 'class-sha-2',
-            'date' => new \DateTimeImmutable('-15 days'),
+            'date' => new DateTimeImmutable('-15 days'),
         ])->_real();
 
         AnalysisResultFactory::createOne([

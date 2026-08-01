@@ -11,6 +11,7 @@ use App\Repository\GithubAccountRepository;
 use App\Repository\GithubRepoRepository;
 use App\Service\Analysis\Prompt\CvImprovementPrompt;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 final readonly class CvImprovementAnalyzer
 {
@@ -23,6 +24,9 @@ final readonly class CvImprovementAnalyzer
     ) {
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function analyze(User $user): ?array
     {
         $llm = $this->llmFactory->create($user);
@@ -43,7 +47,7 @@ final readonly class CvImprovementAnalyzer
             $response = $llm->chat(
                 CvImprovementPrompt::getSystemPrompt(),
                 CvImprovementPrompt::getUserPrompt($context),
-                CvImprovementPrompt::getJsonSchema()
+                CvImprovementPrompt::getJsonSchema(),
             );
 
             $this->logger->info('CV analysis completed', [
@@ -52,13 +56,18 @@ final readonly class CvImprovementAnalyzer
             ]);
 
             return $response;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('CV analysis failed', ['error' => $e->getMessage()]);
 
             return null;
         }
     }
 
+    /**
+     * @param int[] $repoIds
+     *
+     * @return array<string, mixed>
+     */
     private function buildContext(GithubAccount $account, array $repoIds): array
     {
         $repoCount = count($repoIds);

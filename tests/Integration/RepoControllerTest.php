@@ -7,6 +7,7 @@ namespace App\Tests\Integration;
 use App\Tests\Factory\AnalysisResultFactory;
 use App\Tests\Factory\CommitFactory;
 use App\Tests\Factory\GithubRepoFactory;
+use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Zenstruck\Foundry\Test\Factories;
@@ -188,7 +189,7 @@ final class RepoControllerTest extends WebTestCase
             CommitFactory::createOne([
                 'repository' => $repo,
                 'sha' => sprintf('sha-%04d', $i),
-                'date' => new \DateTimeImmutable("-{$i} hours"),
+                'date' => new DateTimeImmutable("-{$i} hours"),
             ]);
         }
 

@@ -12,7 +12,9 @@ use App\Service\Analysis\CvImprovementAnalyzer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Throwable;
 
 class CvAnalysisController extends AbstractController
 {
@@ -53,7 +55,7 @@ class CvAnalysisController extends AbstractController
                     if ($analysis !== null) {
                         $this->cacheAnalysis($session, $analysis);
                     }
-                } catch (\Throwable) {
+                } catch (Throwable) {
                     $this->addFlash('error', 'Failed to generate CV analysis. Check your LLM configuration.');
                 }
             } else {
@@ -69,6 +71,11 @@ class CvAnalysisController extends AbstractController
         ]);
     }
 
+    /**
+     * @param int[] $repoIds
+     *
+     * @return array<string, mixed>
+     */
     private function buildStats(GithubRepoRepository $repoRepo, CommitRepository $commitRepo, array $repoIds): array
     {
         $stats = [
@@ -106,7 +113,10 @@ class CvAnalysisController extends AbstractController
         return $stats;
     }
 
-    private function getCachedAnalysis($session): ?array
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function getCachedAnalysis(SessionInterface $session): ?array
     {
         $cached = $session->get(self::SESSION_KEY);
 
@@ -125,7 +135,10 @@ class CvAnalysisController extends AbstractController
         return $cached;
     }
 
-    private function cacheAnalysis($session, array $analysis): void
+    /**
+     * @param array<string, mixed> $analysis
+     */
+    private function cacheAnalysis(SessionInterface $session, array $analysis): void
     {
         $analysis['_ts'] = time();
         $session->set(self::SESSION_KEY, $analysis);

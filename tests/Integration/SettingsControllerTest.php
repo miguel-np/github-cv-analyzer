@@ -6,6 +6,7 @@ namespace App\Tests\Integration;
 
 use App\Tests\Factory\GithubAccountFactory;
 use App\Tests\Factory\UserFactory;
+use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Zenstruck\Foundry\Test\Factories;
@@ -78,7 +79,7 @@ final class SettingsControllerTest extends WebTestCase
         GithubAccountFactory::createOne([
             'user' => $user,
             'githubUsername' => 'testuser',
-            'lastSyncedAt' => new \DateTimeImmutable('-1 hour'),
+            'lastSyncedAt' => new DateTimeImmutable('-1 hour'),
         ]);
 
         $crawler = $this->client->request('GET', '/settings');
