@@ -33,8 +33,17 @@ class WebhookController extends AbstractController
             return new JsonResponse(['status' => 'unauthorized'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $event = $flatHeaders['x-github-event'] ?? 'ping';
-        $data = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        if (!isset($flatHeaders['x-github-event'])) {
+            return new JsonResponse(['status' => 'missing_event_header'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $event = $flatHeaders['x-github-event'];
+
+        try {
+            $data = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return new JsonResponse(['status' => 'invalid_payload'], Response::HTTP_BAD_REQUEST);
+        }
 
         if (!is_array($data)) {
             return new JsonResponse(['status' => 'invalid_payload'], Response::HTTP_BAD_REQUEST);

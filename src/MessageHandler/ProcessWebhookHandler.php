@@ -29,9 +29,14 @@ final readonly class ProcessWebhookHandler
             'event' => $message->event,
         ]);
 
-        $repoFullName = $message->payload['repository']['full_name'] ?? null;
+        $repository = $message->payload['repository'] ?? [];
+        $repoFullName = is_array($repository) ? ($repository['full_name'] ?? null) : null;
 
-        if ($repoFullName === null) {
+        if ($repoFullName === null || $repoFullName === '') {
+            $this->logger->info('Webhook payload missing repository full_name', [
+                'event' => $message->event,
+            ]);
+
             return;
         }
 

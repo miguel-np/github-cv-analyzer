@@ -60,6 +60,11 @@ final readonly class CommitSyncService
      */
     private function processBatch(GithubRepo $repo, array $batch): int
     {
+        $batch = array_filter($batch, fn (array $item) => isset($item['sha']));
+        if ($batch === []) {
+            return 0;
+        }
+
         $shas = array_column($batch, 'sha');
 
         $existingShas = $this->em->getRepository(Commit::class)
@@ -85,10 +90,10 @@ final readonly class CommitSyncService
             $commit = new Commit();
             $commit->setRepository($repo);
             $commit->setSha($sha);
-            $commit->setMessage($commitData['commit']['message']);
+            $commit->setMessage($commitData['commit']['message'] ?? '');
             $commit->setAuthorEmail($commitData['commit']['author']['email'] ?? '');
             $commit->setAuthorName($commitData['commit']['author']['name'] ?? '');
-            $commit->setDate(new DateTimeImmutable($commitData['commit']['author']['date']));
+            $commit->setDate(new DateTimeImmutable($commitData['commit']['author']['date'] ?? 'now'));
             $commit->setAdditions(0);
             $commit->setDeletions(0);
             $commit->setFilesChanged(0);

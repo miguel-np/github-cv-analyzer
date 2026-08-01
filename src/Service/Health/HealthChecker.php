@@ -72,10 +72,10 @@ final readonly class HealthChecker
             $latency = (int) ((microtime(true) - $start) * 1000);
 
             return ['status' => 'ok', 'latency_ms' => $latency];
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             $latency = (int) ((microtime(true) - $start) * 1000);
 
-            return ['status' => 'error', 'latency_ms' => $latency, 'error' => $e->getMessage()];
+            return ['status' => 'error', 'latency_ms' => $latency];
         }
     }
 
@@ -92,8 +92,8 @@ final readonly class HealthChecker
             )->fetchOne();
 
             return ['status' => 'ok', 'pending_messages' => $pending];
-        } catch (Throwable $e) {
-            return ['status' => 'error', 'error' => $e->getMessage()];
+        } catch (Throwable) {
+            return ['status' => 'error'];
         }
     }
 
@@ -106,8 +106,8 @@ final readonly class HealthChecker
             $this->githubClient?->getCurrentUsername();
 
             return ['status' => 'ok'];
-        } catch (Throwable $e) {
-            return ['status' => 'error', 'error' => $e->getMessage()];
+        } catch (Throwable) {
+            return ['status' => 'error'];
         }
     }
 }

@@ -165,6 +165,12 @@ class CvAnalysisController extends AbstractController
 
                 return $this->redirectToRoute('app_cv_analysis');
             }
+
+            if ($result === null) {
+                $this->addFlash('error', 'Could not generate comparison. Check your LLM configuration.');
+
+                return $this->redirectToRoute('app_cv_analysis');
+            }
         }
 
         return $this->render('cv_analysis/_comparison.html.twig', [

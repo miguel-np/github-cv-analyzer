@@ -143,7 +143,13 @@ class CommitRepository extends ServiceEntityRepository
         $sql = "
             SELECT
                 TO_CHAR(c.date, 'YYYY-MM') AS month,
-                ROUND(AVG(COALESCE((a.classification->>'code_quality_score')::int, 0)), 1) AS avg_quality,
+                ROUND(AVG(
+                    CASE 
+                        WHEN a.classification->>'code_quality_score' ~ '^[0-9]+(\.[0-9]+)?$' 
+                        THEN (a.classification->>'code_quality_score')::numeric 
+                        ELSE 0 
+                    END
+                ), 1) AS avg_quality,
                 COUNT(*) FILTER (WHERE a.classification->>'classification' = 'bugfix') AS bug_count,
                 COUNT(*) FILTER (WHERE a.classification->>'classification' = 'feature') AS feature_count
             FROM commits c
@@ -214,8 +220,13 @@ class CommitRepository extends ServiceEntityRepository
                 TO_CHAR(MIN(c.date), 'YYYY-\"Q\"Q') AS quarter,
                 MIN(TO_CHAR(c.date, 'YYYY-MM')) AS first_seen
             FROM commits c
-            JOIN analysis_results a ON a.commit_id = c.id,
-                 LATERAL json_array_elements_text(a.classification->'technologies_found') AS tech(value)
+            JOIN analysis_results a ON a.commit_id = c.id
+            LEFT JOIN LATERAL json_array_elements_text(
+                CASE WHEN json_typeof(a.classification->'technologies_found') = 'array'
+                     THEN a.classification->'technologies_found'
+                     ELSE '[]'::json
+                END
+            ) AS tech(value) ON true
             WHERE c.repository_id IN (:ids)
             GROUP BY tech.value
             ORDER BY first_seen ASC

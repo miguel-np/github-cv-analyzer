@@ -76,7 +76,16 @@ final readonly class JobMatchAnalyzer
                 continue;
             }
 
-            $data = Yaml::parseFile($file);
+            try {
+                $data = Yaml::parseFile($file);
+            } catch (\Symfony\Component\Yaml\Exception\ParseException $e) {
+                $this->logger->error('Failed to parse reference profile YAML', [
+                    'file' => $file,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+
             if (is_array($data) && isset($data[$key])) {
                 return $data[$key];
             }
@@ -100,7 +109,16 @@ final readonly class JobMatchAnalyzer
                 continue;
             }
 
-            $data = Yaml::parseFile($file);
+            try {
+                $data = Yaml::parseFile($file);
+            } catch (\Symfony\Component\Yaml\Exception\ParseException $e) {
+                $this->logger->error('Failed to parse reference profile YAML', [
+                    'file' => $file,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+
             if (is_array($data)) {
                 foreach ($data as $key => $profile) {
                     $profiles[$key] = $profile['title'] ?? $key;
