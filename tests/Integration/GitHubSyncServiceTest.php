@@ -126,7 +126,7 @@ final class GitHubSyncServiceTest extends KernelTestCase
         self::assertCount(1, $commits);
         self::assertSame('abc123def456', $commits[0]->getSha());
         self::assertSame('feat: add feature X', $commits[0]->getMessage());
-        self::assertFalse($commits[0]->getIsMergeCommit());
+        self::assertFalse($commits[0]->isMergeCommit());
     }
 
     public function testSyncCommitsDetectsMergeCommits(): void
@@ -146,7 +146,7 @@ final class GitHubSyncServiceTest extends KernelTestCase
 
         $commits = $this->em->getRepository(\App\Entity\Commit::class)->findBy(['repository' => $repo]);
         self::assertCount(1, $commits);
-        self::assertTrue($commits[0]->getIsMergeCommit());
+        self::assertTrue($commits[0]->isMergeCommit());
     }
 
     public function testSyncCommitsSkipsAlreadySyncedCommitsOnSecondRun(): void

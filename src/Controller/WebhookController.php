@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Message\ProcessWebhookMessage;
 use App\Service\GitHub\WebhookVerifier;
+use JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,7 +42,7 @@ class WebhookController extends AbstractController
 
         try {
             $data = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
+        } catch (JsonException) {
             return new JsonResponse(['status' => 'invalid_payload'], Response::HTTP_BAD_REQUEST);
         }
 

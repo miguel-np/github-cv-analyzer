@@ -8,6 +8,9 @@ use App\Entity\SyncJob;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<SyncJob>
+ */
 class SyncJobRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

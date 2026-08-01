@@ -68,7 +68,7 @@ class SettingsController extends AbstractController
                 $account->setGithubUsername($username);
                 $em->flush();
 
-                $bus->dispatch(new SyncAccountMessage($account->getId()));
+                $bus->dispatch(new SyncAccountMessage((int) $account->getId()));
 
                 $this->addFlash('success', sprintf(
                     'Cuenta conectada como %s. Sincronización iniciada en segundo plano.',
@@ -152,7 +152,7 @@ class SettingsController extends AbstractController
         $account = $accountRepo->findOneBy(['user' => $user]);
 
         if ($account) {
-            $bus->dispatch(new SyncAccountMessage($account->getId()));
+            $bus->dispatch(new SyncAccountMessage((int) $account->getId()));
             $this->addFlash('success', 'Re-synchronization started.');
         }
 

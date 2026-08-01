@@ -27,7 +27,7 @@ final readonly class TriggerDailySyncHandler
         $this->logger->info('Daily sync triggered', ['accounts' => count($accounts)]);
 
         foreach ($accounts as $account) {
-            $this->bus->dispatch(new SyncAccountMessage($account->getId()));
+            $this->bus->dispatch(new SyncAccountMessage((int) $account->getId()));
         }
     }
 }
