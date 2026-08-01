@@ -5,7 +5,7 @@ services:
       target: runtime
     volumes:
       - .:/app
-      - .env.local:/.env.local:ro
+      - .env.local:/app/.env.local:ro
     ports:
       - "8000:8000"
     depends_on:
@@ -39,7 +39,7 @@ services:
       target: runtime
     volumes:
       - .:/app
-      - .env.local:/.env.local:ro
+      - .env.local:/app/.env.local:ro
     depends_on:
       database:
         condition: service_healthy
@@ -55,7 +55,7 @@ services:
       target: runtime
     volumes:
       - .:/app
-      - .env.local:/.env.local:ro
+      - .env.local:/app/.env.local:ro
     depends_on:
       database:
         condition: service_healthy

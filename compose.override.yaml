@@ -5,8 +5,8 @@ services:
       APP_DEBUG: 1
     volumes:
       - .:/app
-      - .env.local:/.env.local:ro
-      - .env.dev:/.env.dev:ro
+      - .env.local:/app/.env.local:ro
+      - .env.dev:/app/.env.dev:ro
 
 ###> doctrine/doctrine-bundle ###
   database:
@@ -15,9 +15,9 @@ services:
   worker:
     volumes:
       - .:/app
-      - .env.local:/.env.local:ro
+      - .env.local:/app/.env.local:ro
 
   scheduler:
     volumes:
       - .:/app
-      - .env.local:/.env.local:ro
+      - .env.local:/app/.env.local:ro
